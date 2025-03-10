@@ -14,6 +14,7 @@
         <!-- Menu Items -->
         <div class="col-md-8 d-flex flex-wrap">
 
+        <!-- Menudo -->
             <div class="col-md-4 mb-4">
                 <div class="card card-custom shadow-sm h-100">
                     <img src="{{url_for('static', filename = 'menu/Menudo.jpg')}}" class="card-img-top" alt="Menudo">
@@ -40,7 +41,7 @@
             <!-- Pork Steak -->
             <div class="col-md-4 mb-4">
                 <div class="card card-custom shadow-sm h-100">
-                    <img src="{{url_for('static', filename = 'menu/Menudo.jpg')}}" class="card-img-top" alt="Food Image">
+                    <img src="{{url_for('static', filename = 'menu/Porksteak.jpg')}}" class="card-img-top" alt="Menudo">
                     <div class="card-body">
                         <h5 class="card-title">Pork Steak</h5>
                         <p class="card-text text-muted">Description</p>
@@ -49,9 +50,14 @@
                             <span class="fw-bold">₱50.00</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
-                            <button class="btn btn-success btn-sm me-2" type="button">Cart</button>
-                            <button class="btn btn-success btn-sm" onclick="addToCart('Pork Steak', 50)">+ Add</button>
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Pork Steak', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
                         </div>
+                        
                     </div>
                 </div>
             </div>
@@ -59,7 +65,7 @@
             <!-- Sinigang -->
             <div class="col-md-4 mb-4">
                 <div class="card card-custom shadow-sm h-100">
-                    <img src="{{url_for('static', filename = 'menu/Menudo.jpg')}}" class="card-img-top" alt="Food Image">
+                    <img src="{{url_for('static', filename = 'menu/Sinigang.jpg')}}" class="card-img-top" alt="Menudo">
                     <div class="card-body">
                         <h5 class="card-title">Sinigang</h5>
                         <p class="card-text text-muted">Description</p>
@@ -68,58 +74,349 @@
                             <span class="fw-bold">₱50.00</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
-                            <button class="btn btn-success btn-sm me-2" type="button">Cart</button>
-                            <button class="btn btn-success btn-sm" onclick="addToCart('Sinigang', 50)">+ Add</button>
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Sinigang', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
                         </div>
+                        
                     </div>
                 </div>
             </div>
 
+        <!-- Kare-Kare -->
             <div class="col-md-4 mb-4">
                 <div class="card card-custom shadow-sm h-100">
-                    <img src="{{url_for('static', filename = 'menu/Menudo.jpg')}}" class="card-img-top" alt="Food Image">
+                    <img src="{{url_for('static', filename = 'menu/Kare-Kare.jpg')}}" class="card-img-top" alt="Menudo">
                     <div class="card-body">
-                        <h5 class="card-title">Sinigang</h5>
+                        <h5 class="card-title">Kare-Kare</h5>
                         <p class="card-text text-muted">Description</p>
                         <div class="mb-2">
                             <span class="text-muted">Price:</span>
                             <span class="fw-bold">₱50.00</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
-                            <button class="btn btn-success btn-sm me-2" type="button">Cart</button>
-                            <button class="btn btn-success btn-sm" onclick="addToCart('Sinigang', 50)">+ Add</button>
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Kare-Kare', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
                         </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+        <!-- Fried Chicken -->
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/FriedChicken.jpg')}}" class="card-img-top" alt="Menudo">
+                    <div class="card-body">
+                        <h5 class="card-title">Fried Chicken</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Fried Chicken', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+        <!-- Ginataang Langka -->
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/langka.jpg')}}" class="card-img-top" alt="Menudo">
+                    <div class="card-body">
+                        <h5 class="card-title">Ginataang Langka</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Ginataang Langka', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        
+        <!-- Fried Tilapia -->
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/tilapia.jpg')}}" class="card-img-top" alt="Menudo">
+                    <div class="card-body">
+                        <h5 class="card-title">Tilapia</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Tilapia', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+        <!-- Chicken Adobo -->
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/adobo.jpg')}}" class="card-img-top" alt="Menudo">
+                    <div class="card-body">
+                        <h5 class="card-title">Chicken Adobo</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Chicken Adobo', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Pork Adobo -->
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/porkadobo.jpg')}}" class="card-img-top" alt="Menudo">
+                    <div class="card-body">
+                        <h5 class="card-title">Pork Adobo</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Pork Adobo', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Chicken Curry -->
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/chickencurry.jpg')}}" class="card-img-top" alt="Menudo">
+                    <div class="card-body">
+                        <h5 class="card-title">Chicken Curry</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Chicken Curry', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Nilagang Baboy -->
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/nilagang.webp')}}" class="card-img-top" alt="Menudo">
+                    <div class="card-body">
+                        <h5 class="card-title">Nilagang Baboy</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Nilagang Baboy', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Chicken Tinola -->
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/tinola.jpg')}}" class="card-img-top" alt="Menudo">
+                    <div class="card-body">
+                        <h5 class="card-title">Chicken Tinola</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Chicken Tinola', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Sinigang na Bangus -->
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/bngus.jpg')}}" class="card-img-top" alt="Menudo">
+                    <div class="card-body">
+                        <h5 class="card-title">Sinigang na Bangus</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Sinigang na Bangus', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Chopsuey -->
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/chopsuey.jpg')}}" class="card-img-top" alt="Menudo">
+                    <div class="card-body">
+                        <h5 class="card-title">Chopsuey</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Chopsuey', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    <!-- Munggo -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-custom shadow-sm h-100">
+                <img src="{{url_for('static', filename = 'menu/Munggo.jpg')}}" class="card-img-top" alt="Menudo">
+                <div class="card-body">
+                    <h5 class="card-title">Monggo</h5>
+                    <p class="card-text text-muted">Description</p>
+                    <div class="mb-2">
+                        <span class="text-muted">Price:</span>
+                        <span class="fw-bold">₱50.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button class="btn btn-success btn-sm me-2" type="button">
+                            <i class="fas fa-shopping-cart me-1"></i> Cart
+                        </button>
+                        <button class="btn btn-success btn-sm px-3" onclick="addToCart('Munggo', 50)">
+                            <i class="fas fa-plus me-1"></i> Add
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Cart Section -->
-<div class="col-md-4">
-    <div class="card shadow-sm border-0 cart-container" style="box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
-        <div class="card-body">
-            <h5 class="fw-bold mb-3">Items</h5>
-
-            <div id="cart-items">
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Item 1</span>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
+    <!-- Pinakbet -->
+        <div class="col-md-4 mb-4">
+            <div class="card card-custom shadow-sm h-100">
+                <img src="{{url_for('static', filename = 'menu/pinakbet.jpg')}}" class="card-img-top" alt="Menudo">
+                <div class="card-body">
+                    <h5 class="card-title">Pinakbet</h5>
+                    <p class="card-text text-muted">Description</p>
+                    <div class="mb-2">
+                        <span class="text-muted">Price:</span>
+                        <span class="fw-bold">₱50.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button class="btn btn-success btn-sm me-2" type="button">
+                            <i class="fas fa-shopping-cart me-1"></i> Cart
+                        </button>
+                        <button class="btn btn-success btn-sm px-3" onclick="addToCart('Pinakbet', 50)">
+                            <i class="fas fa-plus me-1"></i> Add
+                        </button>
+                    </div>
                 </div>
             </div>
-
-            <!-- Total Section -->
-            <div class="d-flex justify-content-between align-items-center border-top pt-3">
-                <span class="fw-bold">Total</span>
-                <span class="fw-bold" id="total-amount">₱100.00</span>
-            </div>
-
-            <button class="btn btn-success w-100 mt-3">Checkout</button>
         </div>
     </div>
-</div>
+
+
+
+        <!-- Cart Section -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 cart-container" style="box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Items</h5>
+        
+                    <div id="cart-items">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Item 1</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                        </div>
+                    </div>
+        
+                    <!-- Total Section -->
+                    <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                        <span class="fw-bold">Total</span>
+                        <span class="fw-bold" id="total-amount">₱00.00</span>
+                    </div>
+                    <button class="btn btn-success w-100 mt-3">Checkout</button>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+</div>        
 
 
         
