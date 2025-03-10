@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+<title>Crave On</title>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="banner">
+        <h2>30% Off</h2>
+        <p>Crave On</p>
+    </div>
+    <ul class="nav nav-tabs mb-3 justify-content-center">
+        <li class="nav-item"><a class="nav-link text-dark" href="#">All</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="#">Best Sellers</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="#">Top Rated</a></li>
+    </ul>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="{{ url_for('static', filename='menu/Menudo.jpg') }}" class="card-img-top" alt="Menudo">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Menudo</h5>
+                    <p>Peso 50.00</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="{{ url_for('static', filename='menu/Menudo.jpg') }}" class="card-img-top" alt="Menudo">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Menudo</h5>
+                    <p>Peso 50.00</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

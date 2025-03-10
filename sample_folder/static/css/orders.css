@@ -1,0 +1,12 @@
+.cart-item { 
+    border-bottom: 1px solid #ddd; padding: 5px 0; }
+        
+.cart-item:last-child { 
+    border-bottom: none; }
+        
+.btn-remove { 
+    background-color: transparent; border: none; color: red; cursor: pointer; }
+        
+.quantity-control { 
+    width: 35px; }
+

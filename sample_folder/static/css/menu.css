@@ -1,0 +1,34 @@
+
+.card-custom {
+    border: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.btn-custom {
+    background-color: #0d7200;
+    border: none;
+}
+
+.btn-custom:hover{
+    background-color: rgb(0, 0, 0);
+    color: rgb(255, 250, 250);
+}
+
+.card-custom {
+    height: 320px;             /* Set a fixed height for the cards */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow-y: hidden;        /* Prevent height adjustment */
+}
+
+.card-custom .card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-img-top {
+    height: 120px;             /* Set a fixed height for images */
+    object-fit: cover;         /* Ensure images fit within the card */
+}

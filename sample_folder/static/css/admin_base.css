@@ -1,0 +1,27 @@
+
+body {
+    display: flex;
+}
+
+.sidebar {
+    width: 250px;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+}
+
+.sidebar a {
+    color: #333;
+}
+
+.sidebar .nav-link.active {
+    background-color: #e9ecef;
+    font-weight: bold;
+}
+
+.content {
+    margin-left: 250px;
+    padding: 20px;
+    width: calc(100% - 250px);
+}

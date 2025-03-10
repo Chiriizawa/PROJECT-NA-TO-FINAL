@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Menu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/menu.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-5">
+    <div class="row">
+        <!-- Menu Items -->
+        <div class="col-md-8 d-flex flex-wrap">
+
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/Menudo.jpg')}}" class="card-img-top" alt="Menudo">
+                    <div class="card-body">
+                        <h5 class="card-title">Menudo</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">
+                                <i class="fas fa-shopping-cart me-1"></i> Cart
+                            </button>
+                            <button class="btn btn-success btn-sm px-3" onclick="addToCart('Menudo', 50)">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pork Steak -->
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/Menudo.jpg')}}" class="card-img-top" alt="Food Image">
+                    <div class="card-body">
+                        <h5 class="card-title">Pork Steak</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">Cart</button>
+                            <button class="btn btn-success btn-sm" onclick="addToCart('Pork Steak', 50)">+ Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sinigang -->
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/Menudo.jpg')}}" class="card-img-top" alt="Food Image">
+                    <div class="card-body">
+                        <h5 class="card-title">Sinigang</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">Cart</button>
+                            <button class="btn btn-success btn-sm" onclick="addToCart('Sinigang', 50)">+ Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card card-custom shadow-sm h-100">
+                    <img src="{{url_for('static', filename = 'menu/Menudo.jpg')}}" class="card-img-top" alt="Food Image">
+                    <div class="card-body">
+                        <h5 class="card-title">Sinigang</h5>
+                        <p class="card-text text-muted">Description</p>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱50.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-success btn-sm me-2" type="button">Cart</button>
+                            <button class="btn btn-success btn-sm" onclick="addToCart('Sinigang', 50)">+ Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Section -->
+<div class="col-md-4">
+    <div class="card shadow-sm border-0 cart-container" style="box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3">Items</h5>
+
+            <div id="cart-items">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Item 1</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                </div>
+            </div>
+
+            <!-- Total Section -->
+            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                <span class="fw-bold">Total</span>
+                <span class="fw-bold" id="total-amount">₱100.00</span>
+            </div>
+
+            <button class="btn btn-success w-100 mt-3">Checkout</button>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+
+
+        
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+<script src="{{url_for('static', filename = 'js/menu.js')}}"></script>
+{% endblock %}

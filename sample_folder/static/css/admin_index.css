@@ -1,0 +1,55 @@
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.dashboard-header h1 {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s ease-in-out;
+}
+
+
+.card h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.card p {
+    font-size: 18px;
+    color: #555;
+}
+
+.card i {
+    font-size: 40px;
+    margin-bottom: 10px;
+    color: #4CAF50;
+}
+
+.card.sales i {
+    color: #ff9800;
+}
+
+.card.rates i {
+    color: #03a9f4;
+}
+
+.card.customers i {
+    color: #e91e63;
+}
