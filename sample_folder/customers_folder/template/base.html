@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{url_for('static', filename = 'css/bootstrap.min.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename = 'css/base.css')}}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -12,33 +14,29 @@
         <div class="container-fluid d-flex align-items-center">
             <!-- Logo and Brand Name -->
             <a class="navbar-brand d-flex align-items-center text-dark me-auto ms-3 logo" href="{{url_for('customer.index')}}">
-                <img src="{{url_for('static', filename = 'menu/Menudo.jpg')}}" alt="#" width="40" height="40" class="me-2 rounded-circle">
-                <span class="fw-bold">Crave On</span>
+                <img src="{{url_for('static', filename = 'menu/loogo.jpg')}}" alt="#" width="50" height="50" class="me-2">
             </a>
             
-            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-                <ul class="navbar-nav">
+            <div class="collapse navbar-collapse justify-content-center text-center" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
-                        <a class="nav-link nav-link-underline text-dark mx-2" href="{{url_for('customer.menu')}}">Menu</a>
+                        <a class="nav-link nav-link-underline text-dark mx-3" href="{{url_for('customer.menu')}}">Menu</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-underline text-dark mx-2" href="{{url_for('customer.orders')}}">Orders</a>
+                        <a class="nav-link nav-link-underline text-dark mx-3" href="{{url_for('customer.orders')}}">Orders</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-underline text-dark mx-2" href="#">Ingredients</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-underline text-dark mx-2" href="#">About Us</a>
+                        <a class="nav-link nav-link-underline text-dark mx-3" href="#">About Us</a>
                     </li>
                 </ul>
             </div>
-            
-            
+
+
             <!-- Log In and Sign Up  -->
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link btn-primary mx-2" href="{{ url_for('customer.login') }}">Log In</a>
-                </li>
+                    <a class="nav-link btn btn-primary mx-2" data-bs-toggle="modal" data-bs-target="#loginModal">Log In</a>
+                </li>                
                 <li class="nav-item">
                     <a class="nav-link btn-signup mx-2 text-dark" href="{{ url_for('customer.signup') }}">Sign Up</a>
                 </li>
@@ -46,13 +44,88 @@
             
         </div>
     </nav>
-    
+
+    <!-- Login Modal -->
+        <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered"> <!-- Added modal-dialog-centered -->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="loginModalLabel">Crave On Log In</h5>
+                        <i class="fa-solid fa-xmark" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></i> 
+                    </div>
+                    <div class="modal-body">
+                        <form method="POST" action="{{ url_for('customer.login') }}">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+                                    <input type="email" class="form-control" id="email" name="email" placeholder="Enter your username" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter you password" required>
+                                </div>
+                            </div>
+                                <button type="submit" class="btn btn-primary w-100">Log In</button>
+                            <div class="text-center mt-3">
+                                <span>Don't have an account? <a href="{{url_for('customer.signup')}}" class="text-decoration-none">Sign Up</a></span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
     <!-- Main Content -->
     <div class="p-4">
         {% block content %}
         {% endblock %}
     </div>
+
+
+<!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5 mx-auto" style="max-width: 100%;">
+        <div class="container">
+            <div class="row justify-content-center"> 
+                <div class="col-md-3">
+                    <h4 class="fw-bold text-light">Crave On</h4>
+                    <p class="text-light">Cravings mo, Craving ko, Crave On</p>
+                    <div class="social-icons d-flex align-items-center mt-2">
+                        <a href="https://www.facebook.com" target="_blank" class="text-light fs-3 me-3">
+                            <i class="fa-brands fa-facebook"></i>
+                        </a>
+                        <a href="https://www.instagram.com" target="_blank" class="text-light fs-3 instagram-icon">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                    </div>                                            
+                </div>
+    
+                <div class="col-md-3">
+                    <h5 class="fw-bold">Our Categories</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light text-decoration-none">Pork</a></li>
+                        <li><a href="#" class="text-light text-decoration-none">Chicken</a></li>
+                        <li><a href="#" class="text-light text-decoration-none">Vegetables</a></li>
+                        <li><a href="#" class="text-light text-decoration-none">Fish</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-3">
+                    <h5 class="fw-bold">Contact Us</h5>
+                    <p><i class="bi bi-telephone-fill text-warning"></i> 1123303012 </p>
+                    <p><i class="bi bi-telephone-fill text-warning"></i> 1123303012</p>
+                    <p><i class="bi bi-globe text-warning"></i> CraveOn.com</p>
+                    <p><i class="bi bi-envelope-fill text-warning"></i> @CraveOncom</p>
+                    <p><i class="bi bi-geo-alt-fill text-warning"></i> minsan sa kanto minsan sa tabi</p>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>

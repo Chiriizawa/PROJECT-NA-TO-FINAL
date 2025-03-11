@@ -7,35 +7,20 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="banner">
-        <h2>30% Off</h2>
-        <p>Crave On</p>
-    </div>
-    <ul class="nav nav-tabs mb-3 justify-content-center">
-        <li class="nav-item"><a class="nav-link text-dark" href="#">All</a></li>
-        <li class="nav-item"><a class="nav-link text-dark" href="#">Best Sellers</a></li>
-        <li class="nav-item"><a class="nav-link text-dark" href="#">Top Rated</a></li>
-    </ul>
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="{{ url_for('static', filename='menu/Menudo.jpg') }}" class="card-img-top" alt="Menudo">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Menudo</h5>
-                    <p>Peso 50.00</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="{{ url_for('static', filename='menu/Menudo.jpg') }}" class="card-img-top" alt="Menudo">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Menudo</h5>
-                    <p>Peso 50.00</p>
-                </div>
-            </div>
-        </div>
+
+<div class="bg position-relative text-center text-white py-5">
+    <div class="container">
+        <h1 class="fw-bold display-4">Crave On</h1>
+        <p class="lead">Munch like a crunch, crave like a beast. Go on and crunch your cravings now!</p>
+        <a href="#" class="btn btn-outline-light btn-lg mt-3 custom-btn">
+    Check Menu 
+    <i class="fa-solid fa-arrow-right" id="icon"></i>
+</a>
+
     </div>
 </div>
+
+
+
+
 {% endblock %}
