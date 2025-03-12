@@ -7,7 +7,68 @@
 {% endblock %}
 
 {% block content %}
-<h1>
-    Manage Item
-</h1>
+<h2 class="text-center mb-4">Manage Items</h2>
+
+    <!-- Insert Item Form -->
+    <div class="card p-4 mb-4 shadow">
+        <h4>Add New Item</h4>
+        <form action="{{ url_for('admin.manageitem') }}" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label">Item Name:</label>
+                <input type="text" name="name" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Price:</label>
+                <input type="number" step="0.01" name="price" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Quantity:</label>
+                <input type="number" name="quantity" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Upload Image:</label>
+                <input type="file" name="image" class="form-control" accept="image/*" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Item</button>
+        </form>        
+    </div>
+
+    <!-- Items Table -->
+    <div class="card p-4 shadow">
+        <h4>Item List</h4>
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Item Name</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Image</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item[0] }}</td>
+                    <td>{{ item[1] }}</td>
+                    <td>${{ item[2] }}</td>
+                    <td>{{ item[3] }}</td>
+                    <td>
+                        {% if item[4] %}
+                        <img src="data:image/jpeg;base64,{{ item[4] | b64encode }}" width="50" height="50" alt="Item Image">
+                        {% else %}
+                        No Image
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/edit/{{ item[0] }}" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="{{ url_for('admin.delete_item', item_id=item[0]) }}" class="btn btn-danger btn-sm">Delete</a>
+
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}

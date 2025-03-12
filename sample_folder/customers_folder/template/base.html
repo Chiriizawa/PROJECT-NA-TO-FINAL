@@ -12,7 +12,7 @@
 <body>
     <nav class="navbar navbar-expand-lg p-3 shadow-sm bg-white">
         <div class="container-fluid d-flex align-items-center">
-            <!-- Logo and Brand Name -->
+            <!-- LOGO & NAME -->
             <a class="navbar-brand d-flex align-items-center text-dark me-auto ms-3 logo" href="{{url_for('customer.index')}}">
                 <img src="{{url_for('static', filename = 'menu/loogo.jpg')}}" alt="#" width="50" height="50" class="me-2">
             </a>
@@ -47,7 +47,7 @@
 
     <!-- Login Modal -->
         <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered"> <!-- Added modal-dialog-centered -->
+            <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="loginModalLabel">Crave On Log In</h5>
@@ -56,10 +56,10 @@
                     <div class="modal-body">
                         <form method="POST" action="{{ url_for('customer.login') }}">
                             <div class="mb-3">
-                                <label for="email" class="form-label">Email address</label>
+                                <label for="text" class="form-label">Username</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
-                                    <input type="email" class="form-control" id="email" name="email" placeholder="Enter your username" required>
+                                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
                                 </div>
                             </div>
                             
@@ -67,14 +67,17 @@
                                 <label for="password" class="form-label">Password</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
-                                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter you password" required>
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
                                 </div>
                             </div>
-                                <button type="submit" class="btn btn-primary w-100">Log In</button>
+                            
+                            <button type="submit" class="btn btn-primary w-100">Log In</button>
+                        
                             <div class="text-center mt-3">
-                                <span>Don't have an account? <a href="{{url_for('customer.signup')}}" class="text-decoration-none">Sign Up</a></span>
+                                <span>Don't have an account? <a href="{{ url_for('customer.signup') }}" class="text-decoration-none">Sign Up</a></span>
                             </div>
                         </form>
+                        
                     </div>
                 </div>
             </div>

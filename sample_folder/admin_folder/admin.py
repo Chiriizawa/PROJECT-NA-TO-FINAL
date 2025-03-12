@@ -1,14 +1,81 @@
-from flask import Flask, Blueprint, render_template
+import base64
+from flask import Blueprint, render_template, request, redirect, url_for
+import mysql.connector
 
 admin = Blueprint('admin', __name__, template_folder="template")
+
+db_config = {
+    'host': 'localhost',
+    'database': 'test',
+    'user': 'root',
+    'password': '',
+}
+
+def connect_db():
+    return mysql.connector.connect(**db_config)
+
+# Register a Jinja filter for base64 encoding
+@admin.app_template_filter('b64encode')
+def b64encode_filter(data):
+    return base64.b64encode(data).decode('utf-8') if data else ''
 
 @admin.route("/")
 def index():
     return render_template("admin_index.html")
 
-@admin.route('/Manage-Item')
+@admin.route('/Manage-Item', methods=['GET', 'POST'])
 def manageitem():
-    return render_template("manage_item.html")
+    if request.method == "POST":
+        name = request.form.get('name')
+        price = request.form.get('price')
+        quantity = request.form.get('quantity')
+        image = request.files.get('image')
+
+        if not name or not price or not quantity or not image:
+            return "Missing form data", 400
+        
+        image_data = image.read()
+        
+        try:
+            connection = connect_db()
+            cursor = connection.cursor()
+            cursor.execute(
+                "INSERT INTO test_items (item_name, price, quantity, image) VALUES (%s, %s, %s, %s)",
+                (name, price, quantity, image_data)
+            )
+            connection.commit()
+            cursor.close()
+            connection.close()
+            return redirect(url_for('admin.manageitem'))
+        except Exception as e:
+            return f"Error: {str(e)}", 500
+
+    # Handle GET request to render the form
+    try:
+        connection = connect_db()
+        cursor = connection.cursor()
+        cursor.execute("SELECT id, item_name, price, quantity, image FROM test_items")
+        items = cursor.fetchall()
+        cursor.close()
+        connection.close()
+    except Exception:
+        items = []
+    
+    return render_template("manage_item.html", items=items)
+
+@admin.route('/delete/<int:item_id>', methods=['GET'])
+def delete_item(item_id):
+    """ Deletes an item from the database """
+    try:
+        connection = connect_db()
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM test_items WHERE id = %s", (item_id,))
+        connection.commit()
+        cursor.close()
+        connection.close()
+        return redirect(url_for('admin.manageitem'))
+    except Exception as e:
+        return f"Error deleting item: {str(e)}", 500
 
 @admin.route('/Manage-Orders')
 def manageorders():
@@ -20,4 +87,12 @@ def categories():
 
 @admin.route('/Manage-Users')
 def users():
-    return render_template('users.html')
+    
+        connection = connect_db()
+        cursor = connection.cursor()
+        cursor.execute('SELECT * FROM customers')
+        data = cursor.fetchall()
+        cursor.close()
+        connection.close()
+
+        return render_template('manage_users.html')
