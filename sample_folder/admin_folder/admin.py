@@ -50,7 +50,6 @@ def manageitem():
         except Exception as e:
             return f"Error: {str(e)}", 500
 
-    # Handle GET request to render the form
     try:
         connection = connect_db()
         cursor = connection.cursor()
