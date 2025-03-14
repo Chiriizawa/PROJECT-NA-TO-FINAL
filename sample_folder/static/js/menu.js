@@ -44,3 +44,25 @@ function renderCart() {
 
     document.getElementById("total-amount").textContent = `₱${subTotal}.00`;
 }
+
+
+
+function updateCartForm() {
+    let cartInputs = document.getElementById("cart-inputs");
+    cartInputs.innerHTML = "";  // Clear previous inputs
+
+    // Loop through each item in the cart and create hidden input fields
+    for (let i = 0; i < cart.length; i++) {
+        let item = cart[i];
+        cartInputs.innerHTML += `
+            <input type="hidden" name="item_name_${i}" value="${item.name}">
+            <input type="hidden" name="item_price_${i}" value="${item.price}">
+            <input type="hidden" name="item_quantity_${i}" value="${item.quantity}">
+        `;
+    }
+}
+
+// Ensure cart data is updated before submitting
+document.getElementById("checkout-form").addEventListener("submit", function () {
+    updateCartForm();
+});

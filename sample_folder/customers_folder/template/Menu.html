@@ -71,7 +71,12 @@
         <span class="fw-bold">Total</span>
         <span class="fw-bold" id="total-amount">₱0.00</span>
     </div>
-    <button class="btn btn-success w-100 mt-3">Checkout</button>
+
+    <!-- Checkout Form with Hidden Inputs -->
+    <form id="checkout-form" action="{{ url_for('customer.orders') }}" method="POST">
+        <div id="cart-inputs"></div>  <!-- Hidden inputs will be inserted here -->
+        <button type="submit" class="btn btn-success w-100 mt-3">Checkout</button>
+    </form>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>

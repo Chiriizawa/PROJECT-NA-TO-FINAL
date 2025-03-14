@@ -1,8 +1,10 @@
-from flask import Flask, Blueprint, render_template, request
+from flask import Flask, Blueprint, render_template, request, flash, session, redirect, url_for
 import mysql.connector
 import base64
 
 customer = Blueprint('customer', __name__, template_folder="template") 
+
+
 
 db_config = {
     'host':'localhost',
@@ -26,9 +28,20 @@ def b64encode_filter(data):
 def index():
     return render_template("index.html")
 
-@customer.route('/login', methods=['POST'])
+@customer.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template("index.html")
+    if request.method == 'POST':
+        email = request.form['username']
+        password = request.form['password']
+
+        # Hardcoded credentials
+        if email == "bergoniaraymund@gmail.com" and password == "1234567890":
+            return redirect(url_for('customer.index'))
+        else:
+            return render_template("customerlogin.html", error=True)  
+
+    return render_template("customerlogin.html", error=False)
+
 
 @customer.route('/SignUp')
 def signup():
@@ -42,17 +55,18 @@ def menu():
     items = cursor.fetchall()
     connection.close()
 
-    # Ensure `img` is a byte object before encoding
     formatted_items = []
     for id, name, price, qty, img in items:
-        if isinstance(img, bytes):  # Check if image is a BLOB
+        if isinstance(img, bytes):
             img_base64 = base64.b64encode(img).decode('utf-8')
         else:
-            img_base64 = None  # Use default image if not a valid BLOB
+            img_base64 = None 
 
         formatted_items.append((id, name, price, qty, img_base64))
 
     return render_template('Menu.html', items=formatted_items)
+
+
 
 @customer.route('/Orders')
 def orders():

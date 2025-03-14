@@ -14,7 +14,6 @@ db_config = {
 def connect_db():
     return mysql.connector.connect(**db_config)
 
-# Register a Jinja filter for base64 encoding
 @admin.app_template_filter('b64encode')
 def b64encode_filter(data):
     return base64.b64encode(data).decode('utf-8') if data else ''
@@ -64,7 +63,6 @@ def manageitem():
 
 @admin.route('/delete/<int:item_id>', methods=['GET'])
 def delete_item(item_id):
-    """ Deletes an item from the database """
     try:
         connection = connect_db()
         cursor = connection.cursor()
@@ -75,6 +73,30 @@ def delete_item(item_id):
         return redirect(url_for('admin.manageitem'))
     except Exception as e:
         return f"Error deleting item: {str(e)}", 500
+    
+@admin.route('/edit-item', methods=['POST'])
+def edit_item():
+    item_id = request.form.get('item_id')
+    name = request.form.get('name')
+    price = request.form.get('price')
+    quantity = request.form.get('quantity')
+
+    if not item_id or not name or not price or not quantity:
+        return "Missing form data", 400
+
+    try:
+        connection = connect_db()
+        cursor = connection.cursor()
+        cursor.execute(
+            "UPDATE test_items SET item_name = %s, price = %s, quantity = %s WHERE id = %s",
+            (name, price, quantity, item_id)
+        )
+        connection.commit()
+        cursor.close()
+        connection.close()
+        return redirect(url_for('admin.manageitem'))
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
 @admin.route('/Manage-Orders')
 def manageorders():

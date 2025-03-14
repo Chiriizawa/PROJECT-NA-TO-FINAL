@@ -33,3 +33,4 @@ removeButtons.forEach(button => {
 });
 
 document.addEventListener('DOMContentLoaded', updateTotal);
+
