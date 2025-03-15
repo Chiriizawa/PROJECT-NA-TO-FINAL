@@ -34,21 +34,28 @@ def login():
         email = request.form['username']
         password = request.form['password']
 
-        # Hardcoded credentials
         if email == "bergoniaraymund@gmail.com" and password == "1234567890":
+            session['user'] = email
             return redirect(url_for('customer.index'))
         else:
-            return render_template("customerlogin.html", error=True)  
+            return render_template("customerlogin.html", error=True)
 
     return render_template("customerlogin.html", error=False)
 
+@customer.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect(url_for('customer.index'))
 
 @customer.route('/SignUp')
 def signup():
+    
     return render_template("customersignup.html")
 
 @customer.route('/Menu')
 def menu():
+    if 'user' not in session:
+        return redirect(url_for('customer.login'))
     connection = connect_db()
     cursor = connection.cursor()
     cursor.execute("SELECT id, item_name, price, quantity, image FROM test_items")
@@ -70,4 +77,6 @@ def menu():
 
 @customer.route('/Orders')
 def orders():
+    if 'user' not in session:
+        return redirect(url_for('customer.login'))  # Redirect to Login
     return render_template('orders.html')

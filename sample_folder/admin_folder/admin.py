@@ -111,7 +111,7 @@ def users():
     
         connection = connect_db()
         cursor = connection.cursor()
-        cursor.execute('SELECT * FROM customers')
+        cursor.execute('SELECT * FROM users')
         data = cursor.fetchall()
         cursor.close()
         connection.close()
