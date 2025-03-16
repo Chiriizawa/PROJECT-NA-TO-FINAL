@@ -3,11 +3,15 @@
 {% block head %}
 <title>Crave On - Dashboard</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<link rel="stylesheet" href="{{url_for('static', filename = 'css/bootstrap.min.css')}}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+<script>
+    function notifyUser(name) {
+        alert(name + " has logged in!");
+    }
+</script>
 {% endblock %}
 
 {% block content %}
-
 <div class="container">
     <h2 class="text-center mb-4">Manage Users</h2>
 
@@ -17,7 +21,7 @@
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
-                    <th>Username</th>
+                    <th>Email</th>
                     <th>Log In Time</th>
                 </tr>
             </thead>
@@ -27,12 +31,15 @@
                     <td>{{ user[0] }}</td>
                     <td>{{ user[1] }}</td>
                     <td>{{ user[2] }}</td>
-                    <td>{{ user[4] }}</td>
+                    <td>
+                        {{ user[3] }}
+                        {% if user[3] %}
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
-
 {% endblock %}

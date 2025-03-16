@@ -109,11 +109,13 @@ def categories():
 @admin.route('/Manage-Users')
 def users():
     
-        connection = connect_db()
-        cursor = connection.cursor()
-        cursor.execute('SELECT * FROM users')
-        data = cursor.fetchall()
-        cursor.close()
-        connection.close()
+    connection = connect_db()
+    cursor = connection.cursor()
 
-        return render_template('manage_users.html')
+    cursor.execute('SELECT customer_id, name, email, login_time FROM users')
+    data = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return render_template('manage_users.html', data=data)

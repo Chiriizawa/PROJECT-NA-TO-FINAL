@@ -13,18 +13,15 @@
         <h3 class="text-center">Log In</h3>
         <form method="POST" action="{{ url_for('customer.login') }}">
             <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" name="username" id="username" placeholder="Enter your username" required>
+                <label for="email" class="form-label">Email</label>
+                <input type="text" class="form-control" name="email" id="email" placeholder="Enter your email" required>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
                 <input type="password" class="form-control" name="password" id="password" placeholder="Enter your password" required>
             </div>
             <button type="submit" class="btn btn-success w-100 mb-3">Log In</button>
-            {% if error %}
-            <div class="alert text-danger text-center">Invalid username or password.</div>
-            {% endif %}
-            <div class="text-center">
+                        <div class="text-center">
                 <span>Don't have an account? <a href="{{url_for('customer.signup')}}" class="text-decoration-none">Sign Up</a></span>
             </div>
         </form>
