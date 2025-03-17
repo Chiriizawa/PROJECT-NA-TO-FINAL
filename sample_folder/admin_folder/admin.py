@@ -21,6 +21,7 @@ def b64encode_filter(data):
 
 @admin.route("/")
 def index():
+
     return render_template("admin_index.html")
 
 @admin.route('/Manage-Item', methods=['GET', 'POST'])
@@ -102,7 +103,7 @@ def users():
     connection = connect_db()
     cursor = connection.cursor()
 
-    cursor.execute('SELECT customer_id, name, email, login_time FROM users')
+    cursor.execute('SELECT customer_id, name, email, contact, address, login_time FROM customer')
     data = cursor.fetchall()
 
     cursor.close()

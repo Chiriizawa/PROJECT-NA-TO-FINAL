@@ -36,12 +36,12 @@ def login():
         password = request.form.get("password", "").strip()
         conn = connect_db()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        cursor.execute("SELECT * FROM customer WHERE email = %s", (email,))
         user = cursor.fetchone()
         cursor.close()
         conn.close()
 
-        if user and bcrypt.check_password_hash(user[4], password):
+        if user and bcrypt.check_password_hash(user[5], password):
             session["user"] = user[1]
             flash("Login successful!", "success")
             return redirect(url_for("customer.index"))
@@ -62,11 +62,12 @@ def signup():
 
         name = request.form.get('name', '').strip()
         email = request.form.get('email', '').strip()
+        contact = request.form.get('contact', '').strip()
         address = request.form.get('address', '').strip()
         password = request.form.get('password', '').strip()
         confirm_password = request.form.get('confirm-password', '').strip()
 
-        if not name or not email or not address or not password or not confirm_password:
+        if not name or not email or not contact or not address or not password or not confirm_password:
             return redirect(url_for('customer.signup'))
 
         if password != confirm_password:
@@ -77,7 +78,7 @@ def signup():
         conn = connect_db()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        cursor.execute("SELECT * FROM customer WHERE email = %s", (email,))
         existing_user = cursor.fetchone()
 
         if existing_user:
@@ -86,8 +87,8 @@ def signup():
             conn.close()
             return redirect(url_for('customer.signup'))
 
-        cursor.execute("INSERT INTO users (name, email, address, password) VALUES (%s, %s, %s, %s)", 
-        (name, email, address, hashed_password))
+        cursor.execute("INSERT INTO customer (name, email, contact, address, password) VALUES (%s, %s, %s, %s, %s)", 
+        (name, email, contact, address, hashed_password))
         conn.commit()
         cursor.close()
         conn.close()
