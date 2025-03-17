@@ -29,15 +29,14 @@
             {% for item in items %}
             <div class="col-lg-3 col-md-4 col-sm-6 mb-4" id="item-{{ loop.index }}" data-category="{{ item[3] }}">
                 <div class="card shadow-sm h-100">
-                    {% if item[4] %}
-                        <img src="data:image/jpeg;base64,{{ item[4] }}" class="card-img-top" alt="{{ item[1] }}">
+                    {% if item[3] %}
+                        <img src="data:image/jpeg;base64,{{ item[3] }}" class="card-img-top" alt="{{ item[1] }}">
                     {% else %}
                         <img src="{{ url_for('static', filename='menu/default.jpg') }}" class="card-img-top" alt="Default Image">
                     {% endif %}
 
                     <div class="card-body">
                         <h5 class="card-title">{{ item[1] }}</h5>
-                        <p class="card-text text-muted">Description</p>
                         <div class="mb-2">
                             <span class="text-muted">Price:</span>
                             <span class="fw-bold">₱{{ item[2] }}</span>

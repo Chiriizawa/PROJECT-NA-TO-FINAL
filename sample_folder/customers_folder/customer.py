@@ -9,7 +9,7 @@ bcrypt = Bcrypt()
 
 db_config = {
     'host':'localhost',
-    'database':'test',
+    'database':'craveon',
     'user':'root',
     'password':'',
 }
@@ -102,18 +102,18 @@ def menu():
         return redirect(url_for('customer.login'))
     connection = connect_db()
     cursor = connection.cursor()
-    cursor.execute("SELECT id, item_name, price, quantity, image FROM test_items")
+    cursor.execute("SELECT item_id, item_name, price, image FROM items")
     items = cursor.fetchall()
     connection.close()
 
     formatted_items = []
-    for id, name, price, qty, img in items:
+    for item_id, name, price, img in items:
         if isinstance(img, bytes):
             img_base64 = base64.b64encode(img).decode('utf-8')
         else:
             img_base64 = None 
 
-        formatted_items.append((id, name, price, qty, img_base64))
+        formatted_items.append((item_id, name, price, img_base64))
 
     return render_template('Menu.html', items=formatted_items)
 

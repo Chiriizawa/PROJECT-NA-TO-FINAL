@@ -1,12 +1,13 @@
 import base64
 from flask import Blueprint, render_template, request, redirect, url_for
 import mysql.connector
+import base64
 
 admin = Blueprint('admin', __name__, template_folder="template")
 
 db_config = {
     'host': 'localhost',
-    'database': 'test',
+    'database': 'craveon',
     'user': 'root',
     'password': '',
 }
@@ -27,21 +28,22 @@ def manageitem():
     if request.method == "POST":
         name = request.form.get('name')
         price = request.form.get('price')
-        quantity = request.form.get('quantity')
         image = request.files.get('image')
 
-        if not name or not price or not quantity or not image:
+        if not name or not price or not image:
             return "Missing form data", 400
-        
+
         image_data = image.read()
-        
+
         try:
             connection = connect_db()
             cursor = connection.cursor()
+            
             cursor.execute(
-                "INSERT INTO test_items (item_name, price, quantity, image) VALUES (%s, %s, %s, %s)",
-                (name, price, quantity, image_data)
+                "INSERT INTO items (item_name, price, image) VALUES (%s, %s, %s)",
+                (name, price, image_data)
             )
+            
             connection.commit()
             cursor.close()
             connection.close()
@@ -52,21 +54,29 @@ def manageitem():
     try:
         connection = connect_db()
         cursor = connection.cursor()
-        cursor.execute("SELECT id, item_name, price, quantity, image FROM test_items")
+        
+        cursor.execute("SELECT item_id, item_name, price, image FROM items")
         items = cursor.fetchall()
+
+        processed_items = []
+        for item in items:
+            item_id, item_name, price, image_data = item
+            image_base64 = base64.b64encode(image_data).decode('utf-8') if image_data else None
+            processed_items.append((item_id, item_name, price, image_base64))
+
         cursor.close()
         connection.close()
     except Exception:
-        items = []
-    
-    return render_template("manage_item.html", items=items)
+        processed_items = []
+
+    return render_template("manage_item.html", items=processed_items)
 
 @admin.route('/delete/<int:item_id>', methods=['GET'])
 def delete_item(item_id):
     try:
         connection = connect_db()
         cursor = connection.cursor()
-        cursor.execute("DELETE FROM test_items WHERE id = %s", (item_id,))
+        cursor.execute("DELETE FROM items WHERE item_id = %s", (item_id,))
         connection.commit()
         cursor.close()
         connection.close()
@@ -76,27 +86,7 @@ def delete_item(item_id):
     
 @admin.route('/edit-item', methods=['POST'])
 def edit_item():
-    item_id = request.form.get('item_id')
-    name = request.form.get('name')
-    price = request.form.get('price')
-    quantity = request.form.get('quantity')
-
-    if not item_id or not name or not price or not quantity:
-        return "Missing form data", 400
-
-    try:
-        connection = connect_db()
-        cursor = connection.cursor()
-        cursor.execute(
-            "UPDATE test_items SET item_name = %s, price = %s, quantity = %s WHERE id = %s",
-            (name, price, quantity, item_id)
-        )
-        connection.commit()
-        cursor.close()
-        connection.close()
-        return redirect(url_for('admin.manageitem'))
-    except Exception as e:
-        return f"Error: {str(e)}", 500
+    return
 
 @admin.route('/Manage-Orders')
 def manageorders():
