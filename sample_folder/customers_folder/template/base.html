@@ -11,61 +11,84 @@
     
     {% block head %}{% endblock %}
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .profile-dropdown {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 60px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            z-index: 1000;
+            width: 150px;
+        }
+        .profile-dropdown a {
+            display: block;
+            padding: 8px 10px;
+            text-decoration: none;
+            color: black;
+        }
+        .profile-dropdown a:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
 </head>
 <body style="background-color: #D3CEDF;">
 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg p-3 shadow-sm" style="background-color: #D3CEDF;">
         <div class="container-fluid d-flex align-items-center">
-            <!-- LOGO -->
-            <a class="navbar-brand d-flex align-items-center text-dark me-auto ms-3 logo" href="{{ url_for('customer.index') }}">
+            <a class="navbar-brand text-dark me-auto ms-3 logo" href="{{ url_for('customer.index') }}">
                 <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="logo" width="50" height="50" class="me-2">
             </a>
-
             <div class="navbar-collapse show justify-content-center text-center" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
-                        <a class="nav-link nav-link-underline text-dark mx-3" href="{% if session.get('user') %} {{ url_for('customer.menu') }} {% else %} {{ url_for('customer.login') }} {% endif %}">Menu</a>
+                        <a class="nav-link text-dark mx-3 nav-link-underline" href="{{ url_for('customer.menu') }}">Menu</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-underline text-dark mx-3" href="{% if session.get('user') %} {{ url_for('customer.orders') }} {% else %} {{ url_for('customer.login') }} {% endif %}">Orders</a>
+                        <a class="nav-link text-dark mx-3 nav-link-underline" href="{{ url_for('customer.orders') }}">Orders</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-underline text-dark mx-3" href="#footer">About Us</a>
+                        <a class="nav-link text-dark mx-3 nav-link-underline" href="#footer">About Us</a>
                     </li>                    
                 </ul>
+                
             </div>
-
-            <!-- User Logged In -->
             {% if session.get('user') %}
-                <button onclick="toggleSidebar()" class="text-2xl p-2 text-dark">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
+                <div class="position-relative">
+                    <i class="fa-solid fa-user text-2xl profile-icon" style="cursor:pointer; font-size: 24px;" onclick="toggleDropdown()"></i>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <a href="#">Account</a>
+                        <a href="#" class="text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal">Log Out</a>
+                    </div>
+                </div>
             {% else %}
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-primary mx-2" href="{{ url_for('customer.login') }}">Log In</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn-signup mx-2 text-dark" href="{{ url_for('customer.signup') }}">Sign Up</a>
-                    </li>
-                </ul>
+                <a class="btn btn-primary mx-2" href="{{ url_for('customer.login') }}">Log In</a>
+                <a class="btn btn-outline-dark mx-2" href="{{ url_for('customer.signup') }}">Sign Up</a>
             {% endif %}
         </div>
     </nav>
 
-    <!-- Sidebar -->
-    <div id="sidebar" class="fixed right-0 top-0 h-full w-64 bg-white text-black transform translate-x-full transition-transform duration-300 flex flex-col justify-between">
-        <div class="p-4">
-            <div class="flex justify-end">
-                <button onclick="toggleSidebar()" class="text-2xl">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+    <!-- Log Out Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">Confirm Log Out</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to log out?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <a href="{{ url_for('customer.logout') }}" class="btn btn-danger">Log Out</a>
+                </div>
             </div>
-            <p class=" m-3 font-semibold ">Welcome to Crave On, <br> {{ session.get('user') }}</p>
-        </div>
-        <div class="p-5">
-            <a href="{{ url_for('customer.logout') }}" class="w-full bg-red-500 px-4 py-2 rounded text-white hover:bg-red-600 transition text-center block">Log Out</a>
         </div>
     </div>
 
@@ -76,7 +99,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-dark text-light py-4 mt-5 mx-auto w-full" id="footer" >
+    <footer class="bg-dark text-light py-4 mt-5 mx-auto w-full" id="footer">
         <div class="container">
             <div class="row justify-content-center"> 
                 <div class="col-md-3">
@@ -108,9 +131,7 @@
         </div>
     </footer>
 
-    <!-- Bootstrap Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{url_for('static', filename = 'js/base.js')}}"></script>
+    <script src="{{url_for('static', filename = 'js/base.js')}}"></SCript>
 </body>
 </html>
