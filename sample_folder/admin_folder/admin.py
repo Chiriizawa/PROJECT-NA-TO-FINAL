@@ -1,5 +1,5 @@
 import base64
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 import mysql.connector
 import base64
 
@@ -19,10 +19,31 @@ def connect_db():
 def b64encode_filter(data):
     return base64.b64encode(data).decode('utf-8') if data else ''
 
-@admin.route("/")
+@admin.route('/')
 def index():
-
     return render_template("admin_index.html")
+
+@admin.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "").strip()
+
+        # Hardcoded email and password check
+        if email == "bergoniaraymund@gmail.com" and password == "1234567890":
+            session["user"] = email
+            flash("Login successful!", "success")
+            return redirect(url_for("admin.index"))
+
+        flash("Invalid credentials. Please try again.", "danger")
+
+    return render_template("admin_login.html")
+
+@admin.route("/logout")
+def logout():
+    session.pop("user", None)
+    flash("Logged out successfully!", "success")
+    return redirect(url_for("admin.login"))
 
 @admin.route('/Manage-Item', methods=['GET', 'POST'])
 def manageitem():

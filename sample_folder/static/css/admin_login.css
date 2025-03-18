@@ -1,0 +1,9 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f8f9fa;
+    background: url("../images/bg.jpg") no-repeat center center fixed;
+    background-size: cover;
+}
