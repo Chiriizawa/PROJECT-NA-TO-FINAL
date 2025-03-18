@@ -120,8 +120,27 @@ def menu():
 
 
 
-@customer.route('/Orders')
+@customer.route('/Orders', methods=['GET', 'POST'])
 def orders():
     if 'user' not in session:
-        return redirect(url_for('customer.login'))  # Redirect to Login
-    return render_template('orders.html')
+        return redirect(url_for('customer.login')) 
+
+    cart_items = []
+    index = 0
+    while f'item_name_{index}' in request.form:
+        cart_items.append({
+            'name': request.form[f'item_name_{index}'],
+            'price': float(request.form[f'item_price_{index}']),
+            'quantity': int(request.form[f'item_quantity_{index}'])
+        })
+        index += 1
+
+    total_amount = sum(item['price'] * item['quantity'] for item in cart_items)
+    
+    connection = connect_db()
+    cursor = connection.cursor()
+    cursor.execute("SELECT name, email, contact, address FROM customer")
+    users = cursor.fetchall()
+    connection.close()
+
+    return render_template('orders.html', cart_items=cart_items, total_amount=total_amount, users=users)

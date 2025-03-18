@@ -8,16 +8,18 @@
 
 {% block content %}
 <div class="container my-4" style="margin-left: 8em; max-width: 1200px;">
-    
-
     <!-- Cart Section -->
     <div class="col-md-8 mx-auto mt-4">
         <div class="border rounded p-3 mb-3 shadow-sm">
             <div id="cart-items"></div>
+            {% for item in cart_items %}
+                    <p>{{ item.name }} - {{ item.quantity }} x ₱{{ item.price }}0</p>
+                    {% endfor %}
             <div class="border-top pt-2">
+                
                 <div class="d-flex justify-content-between">
-                    <span>Total Amount:</span>
-                    <span id="total-amount">₱0.00</span>
+                    
+                    <p><strong>Total Amount: </strong>₱{{ total_amount }}0</p>
                 </div>
                 <button class="btn btn-success w-100 mt-3">ORDER NOW</button>
             </div>

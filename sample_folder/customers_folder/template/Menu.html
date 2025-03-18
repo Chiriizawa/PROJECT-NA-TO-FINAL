@@ -70,8 +70,8 @@
 
     <!-- Checkout Form with Hidden Inputs -->
     <form id="checkout-form" action="{{ url_for('customer.orders') }}" method="POST">
-        <div id="cart-inputs"></div>  <!-- Hidden inputs will be inserted here -->
-        <button type="submit" class="btn btn-success w-100 mt-3">Checkout</button>
+        <div id="cart-inputs"></div> <!-- This will store hidden input fields -->
+        <button type="submit" class="btn btn-success">Checkout</button>
     </form>
 </div>
 
