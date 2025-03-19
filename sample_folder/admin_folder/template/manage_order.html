@@ -8,6 +8,7 @@
         <tr>
             <th>Order ID</th>
             <th>Item</th>
+            <th>Quantity</th>
             <th>Price</th>
             <th>Order Date</th>
             <th>Status</th>
@@ -19,6 +20,7 @@
         <tr>
             <td>{{ order.order_id }}</td>
             <td>{{ order.item_name }}</td>
+            <td>{{order.quantity}}</td>
             <td>₱{{ order.price }}</td>
             <td>{{ order.order_date }}</td>
             <td>{{ order.status }}</td>

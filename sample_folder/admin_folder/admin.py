@@ -116,7 +116,7 @@ def manageorders():
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT orders.order_id, orders.total_price, orders.order_date, orders.status, items.item_name, items.price, items.image
+        SELECT orders.order_id, orders.total_price, orders.order_date, orders.status, items.item_name, items.price, items.image, order_items.quantity
         FROM orders
         JOIN order_items ON orders.order_id = order_items.order_id
         JOIN items ON order_items.item_id = items.item_id
@@ -128,6 +128,7 @@ def manageorders():
     conn.close()
 
     return render_template('manage_order.html', orders=orders)
+
 
 @admin.route('/Manage-Categories')
 def categories():
