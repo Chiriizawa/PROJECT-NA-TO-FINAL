@@ -112,7 +112,22 @@ def edit_item():
 
 @admin.route('/Manage-Orders')
 def manageorders():
-    return render_template("manage_order.html")
+    conn = connect_db()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT orders.order_id, orders.total_price, orders.order_date, orders.status, items.item_name, items.price, items.image
+        FROM orders
+        JOIN order_items ON orders.order_id = order_items.order_id
+        JOIN items ON order_items.item_id = items.item_id
+        WHERE orders.status = 'Pending'
+    """)
+
+    orders = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    return render_template('manage_order.html', orders=orders)
 
 @admin.route('/Manage-Categories')
 def categories():
@@ -131,3 +146,46 @@ def users():
     connection.close()
 
     return render_template('manage_users.html', data=data)
+
+
+@admin.route('/accept_order/<int:order_id>')
+def accept_order(order_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE orders SET status='Accepted' WHERE order_id=%s", (order_id,))
+    conn.commit()
+    conn.close()
+    return redirect('/manage_orders')
+
+# Delete Order
+@admin.route('/delete_order/<int:order_id>')
+def delete_order(order_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM orders WHERE order_id=%s", (order_id,))
+    conn.commit()
+    conn.close()
+    return redirect('/manage_orders')
+
+
+"""@admin.route('/place_order', methods=['POST'])
+def place_order():
+    if request.method == 'POST':
+        customer_id = request.form.get('customer_id')
+        total_price = request.form.get('total_price')
+        items = request.form.getlist('items') 
+        conn = connect_db()
+        cursor = conn.cursor()
+
+
+        cursor.execute("INSERT INTO orders (total_price, customer_id, status) VALUES (%s, %s, %s)", (total_price, customer_id, 'Pending'))
+        order_id = cursor.lastrowid 
+
+        for item_id in items:
+            cursor.execute("INSERT INTO order_items (order_id, item_id) VALUES (%s, %s)", (order_id, item_id))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return redirect(url_for('user_orders'))"""

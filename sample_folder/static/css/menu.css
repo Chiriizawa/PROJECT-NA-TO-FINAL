@@ -32,3 +32,7 @@
     height: 120px;             /* Set a fixed height for images */
     object-fit: cover;         /* Ensure images fit within the card */
 }
+
+.btn-success {
+    width: 100%;
+}

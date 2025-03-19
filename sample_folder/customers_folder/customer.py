@@ -118,8 +118,6 @@ def menu():
 
     return render_template('Menu.html', items=formatted_items)
 
-
-
 @customer.route('/Orders', methods=['GET', 'POST'])
 def orders():
     if 'user' not in session:

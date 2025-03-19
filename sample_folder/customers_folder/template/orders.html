@@ -8,27 +8,36 @@
 
 {% block content %}
 <div class="container my-4" style="margin-left: 8em; max-width: 1200px;">
-    <!-- Cart Section -->
     <div class="col-md-8 mx-auto mt-4">
         <div class="border rounded p-3 mb-3 shadow-sm">
-            <div id="cart-items"></div>
-            {% for item in cart_items %}
-                    <p>{{ item.name }} - {{ item.quantity }} x ₱{{ item.price }}0</p>
-                    {% endfor %}
-            <div class="border-top pt-2">
-                
-                <div class="d-flex justify-content-between">
-                    
-                    <p><strong>Total Amount: </strong>₱{{ total_amount }}0</p>
+            <form id="orderForm" action="/place_order" method="POST">
+                {% for item in cart_items %}
+                <input type="hidden" name="item_id[]" value="{{ item.item_id }}">
+                <input type="hidden" name="item_name[]" value="{{ item.name }}">
+                <input type="hidden" name="quantity[]" value="{{ item.quantity }}">
+                <input type="hidden" name="price[]" value="{{ item.price }}">
+
+                <div class="d-flex align-items-center mb-3">
+                    <img src="{{ item.image_url }}" alt="{{ item.name }}" class="me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                    <p class="mb-2">{{ item.name }} - {{ item.quantity }} x ₱{{ item.price }}0</p>
                 </div>
-                <button class="btn btn-success w-100 mt-3">ORDER NOW</button>
-            </div>
+                {% endfor %}
+
+                <div class="border-top pt-2">
+                    <p><strong>Total Amount: </strong>₱{{ total_amount }}0</p>
+                    <button type="button" class="btn btn-success w-100 mt-3" onclick="confirmOrder()">ORDER NOW</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
+<script>
+    function confirmOrder() {
+            alert("Order placed successfully!");
+        }
+</script>
 
-<script src="{{url_for('static', filename = 'js/orders.js')}}"> </script>
+<script src="{{url_for('static', filename = 'js/orders.js')}}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
-
