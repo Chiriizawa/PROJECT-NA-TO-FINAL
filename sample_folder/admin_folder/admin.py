@@ -112,22 +112,9 @@ def edit_item():
 
 @admin.route('/Manage-Orders')
 def manageorders():
-    conn = connect_db()
-    cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        SELECT orders.order_id, orders.total_price, orders.order_date, orders.status, items.item_name, items.price, items.image, order_items.quantity
-        FROM orders
-        JOIN order_items ON orders.order_id = order_items.order_id
-        JOIN items ON order_items.item_id = items.item_id
-        WHERE orders.status = 'Pending'
-    """)
 
-    orders = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    return render_template('manage_order.html', orders=orders)
+    return render_template('manage_order.html')
 
 
 @admin.route('/Manage-Categories')
@@ -158,7 +145,6 @@ def accept_order(order_id):
     conn.close()
     return redirect('/manage_orders')
 
-# Delete Order
 @admin.route('/delete_order/<int:order_id>')
 def delete_order(order_id):
     conn = connect_db()
