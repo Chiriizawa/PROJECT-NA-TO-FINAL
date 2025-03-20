@@ -46,14 +46,14 @@ def login():
             flash("Login successful!", "success")
             return redirect(url_for("customer.index"))
 
-        flash("Invalid credentials. Please try again.", "danger")
+    #  flash("Invalid credentials. Please try again.", "danger")
 
     return render_template("customerlogin.html")
 
 @customer.route("/logout")
 def logout():
     session.pop("user", None)
-    flash("Logged out successfully!", "success")
+  #  flash("Logged out successfully!", "success")
     return redirect(url_for("customer.index"))
 
 @customer.route('/SignUp', methods=['GET', 'POST'])
@@ -82,7 +82,7 @@ def signup():
         existing_user = cursor.fetchone()
 
         if existing_user:
-            flash("Email already registered. Please log in.", "danger")
+            #flash("Email already registered. Please log in.", "danger")
             cursor.close()
             conn.close()
             return redirect(url_for('customer.signup'))
@@ -142,3 +142,17 @@ def orders():
     connection.close()
 
     return render_template('orders.html', cart_items=cart_items, total_amount=total_amount, users=users)
+
+@customer.route('/Account')
+def account():
+
+    connection = connect_db()
+    cursor = connection.cursor()
+
+    cursor.execute('SELECT name, email, contact, address FROM customer')
+    data = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return render_template("account.html", data=data)

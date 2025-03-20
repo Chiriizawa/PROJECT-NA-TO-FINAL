@@ -112,8 +112,6 @@ def edit_item():
 
 @admin.route('/Manage-Orders')
 def manageorders():
-
-
     return render_template('manage_order.html')
 
 
