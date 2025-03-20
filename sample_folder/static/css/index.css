@@ -3,9 +3,9 @@
 }
 
 .bg {
-    background-color: grey;
+    background: url("../images/bgindex.jpg") no-repeat center center;
     background-size: cover;
-    height: 60vh; 
+    height: 75vh; 
     display: flex;
     align-items: center;
     justify-content: center;

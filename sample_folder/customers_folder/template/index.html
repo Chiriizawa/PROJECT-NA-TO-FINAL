@@ -15,8 +15,41 @@
         <a href="#" class="btn btn-outline-light btn-lg mt-3 custom-btn">
     Check Menu 
     <i class="fa-solid fa-arrow-right" id="icon"></i>
-</a>
+        </a>
+    </div>
+</div>
 
+<div class="container-fluid my-5 d-flex justify-content-center align-items-center">
+    <div class="container text-center mt-5">
+        <h1 class="mb-4 text-4xl">Popular Dishes</h1>
+        <div class="row justify-content-center">
+            {% for item in items %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4" id="item-{{ loop.index }}" data-category="{{ item[3] }}">
+                <div class="card shadow-sm h-100">
+                    {% if item[3] %}
+                        <img src="data:image/jpeg;base64,{{ item[3] }}" class="card-img-top" alt="{{ item[1] }}">
+                    {% else %}
+                        <img src="#" class="card-img-top" alt="Default Image">
+                    {% endif %}
+
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item[1] }}</h5>
+                        <div class="mb-2">
+                            <span class="text-muted">Price:</span>
+                            <span class="fw-bold">₱{{ item[2] }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button class="btn btn-primary btn-sm px-3" onclick="addToCart('{{ item[1] }}', '{{ item[2] }}')">
+                                <i class="fas fa-plus me-1"></i> ADD
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+                <p class="text-center">No items available.</p>
+            {% endfor %}
+        </div>
     </div>
 </div>
 

@@ -7,6 +7,13 @@
     margin-left: 19px;
 }
 
+
+
+
+.nav-link {
+    font-size: 1.3rem; }
+
+
 .nav-link-underline {
     position: relative;
     overflow: hidden;
@@ -36,4 +43,27 @@
 
 #sidebar {
     z-index: 9999;
+}
+
+.profile-dropdown {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 60px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 1000;
+    width: 150px;
+}
+.profile-dropdown a {
+    display: block;
+    padding: 8px 10px;
+    text-decoration: none;
+    color: black;
+}
+.profile-dropdown a:hover {
+    background-color: #f0f0f0;
 }
