@@ -105,10 +105,36 @@ def delete_item(item_id):
         return redirect(url_for('admin.manageitem'))
     except Exception as e:
         return f"Error deleting item: {str(e)}", 500
-    
-@admin.route('/edit-item', methods=['POST'])
-def edit_item():
-    return
+
+@admin.route('/edit-item/<int:item_id>', methods=['POST'])
+def edit_item(item_id):
+    if request.method == 'POST':
+        name = request.form.get('name')
+        price = request.form.get('price')
+        image = request.files.get('image')
+
+        try:
+            connection = connect_db()
+            cursor = connection.cursor()
+
+            if image:
+                image_data = image.read()
+                cursor.execute(
+                    "UPDATE items SET item_name=%s, price=%s, image=%s WHERE item_id=%s",
+                    (name, price, image_data, item_id),
+                )
+            else:
+                cursor.execute(
+                    "UPDATE items SET item_name=%s, price=%s WHERE item_id=%s",
+                    (name, price, item_id),
+                )
+
+            connection.commit()
+            cursor.close()
+            connection.close()
+            return redirect(url_for('admin.manageitem'))
+        except Exception as e:
+            return f"Error updating item: {str(e)}", 500
 
 @admin.route('/Manage-Orders')
 def manageorders():
@@ -161,8 +187,7 @@ def place_order():
         items = request.form.getlist('items') 
         conn = connect_db()
         cursor = conn.cursor()
-
-
+        
         cursor.execute("INSERT INTO orders (total_price, customer_id, status) VALUES (%s, %s, %s)", (total_price, customer_id, 'Pending'))
         order_id = cursor.lastrowid 
 
