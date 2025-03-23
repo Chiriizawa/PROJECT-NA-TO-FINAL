@@ -233,10 +233,10 @@ def verify():
 
         message = Message(
             subject="Holabels",
-            recipients=["kzabarquez24@gmail.com"],
+            recipients=["@gmail.com"],
             sender=current_app.config['MAIL_USERNAME'] 
         )
-        message.body = "HELLLOO LOVEEEYYY"
+        message.body = "HELLLOO"
 
         mail.send(message)
         return "MESSAGE SENT SUCCESSFULLY"
