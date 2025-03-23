@@ -1,18 +1,104 @@
-*{
+/* Reset margins and paddings */
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.bg {
-    background: url("../images/bgindex.jpg") no-repeat center center;
-    background-size: cover;
-    height: 75vh; 
+/* General Style for Full-Height Sections */
+.section {
+    height: 100vh; /* Full viewport height */
+    width: 100vw; /* Full viewport width */
     display: flex;
     align-items: center;
     justify-content: center;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
-#icon{
-    position: relative;
-    top: 2px;
-    left: 2px;
+/* Section 1 - Background */
+.bg1 {
+    background: url("../images/bg1.jpg") no-repeat center center;
+    background-size: cover;
+}
+
+/* Section 2 - Popular Dishes Background */
+.bg2 {
+    background: url("../images/bg2.jpg") no-repeat center center;
+    background-size: cover;
+}
+
+/* Section 3 - Contact/Info Background */
+.bg3 {
+    background: url("../images/bg3.jpg") no-repeat center center;
+    background-size: cover;
+}
+
+/* Hero Section Content */
+.hero-content {
+    text-align: center;
+    color: white;
+    padding: 20px;
+}
+
+/* Button Styling */
+.custom-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.custom-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: white;
+    color: #333;
+}
+
+/* Card Styles for Popular Dishes */
+.card {
+    transition: transform 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* Container to Center Items with Shadow and Rounded Corners */
+.item-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap; /* Ensures responsiveness */
+    width: 90%;
+    max-width: 1200px;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.9); /* Light background with slight opacity */
+    border-radius: 20px; /* Rounded corners */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Soft shadow */
+    margin: 20px auto; /* Center and add space around */
+    overflow: hidden;
+}
+
+/* Optional: Add padding or spacing inside the container if needed */
+.item-container .content {
+    padding: 20px;
+    width: 100%;
+}
+.logo-container {
+    display: inline-block;
+    animation: bounce 1.5s infinite ease-in-out;
+}
+
+/* Bounce Keyframes */
+@keyframes bounce {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
 }

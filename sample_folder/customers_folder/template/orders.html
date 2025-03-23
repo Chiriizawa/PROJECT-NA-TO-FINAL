@@ -2,42 +2,56 @@
 
 {% block head %}
     <title>Crave On - Orders</title>
-    <link rel="stylesheet" href="{{url_for('static', filename = 'css/orders.css')}}">
-    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/orders.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
-<div class="container my-4" style="margin-left: 8em; max-width: 1200px;">
-    <div class="col-md-8 mx-auto mt-4">
-        <div class="border rounded p-3 mb-3 shadow-sm">
-            <form id="orderForm" action="/place_order" method="POST">
-                {% for item in cart_items %}
-                <input type="hidden" name="item_id[]" value="{{ item.item_id }}">
-                <input type="hidden" name="item_name[]" value="{{ item.name }}">
-                <input type="hidden" name="quantity[]" value="{{ item.quantity }}">
-                <input type="hidden" name="price[]" value="{{ item.price }}">
+<div class="wrapper">
+    <!-- Background Container -->
+    <div class="bg-container content-wrapper">
+        <div class="container my-4" style="margin-left: 8em; max-width: 1200px;">
+            <div class="col-md-8 mx-auto mt-4">
+                <div class="cart-container shadow-sm">
+                    <form id="orderForm" action="/place_order" method="POST">
+                        {% for item in cart_items %}
+                        <input type="hidden" name="item_id[]" value="{{ item.item_id }}">
+                        <input type="hidden" name="item_name[]" value="{{ item.name }}">
+                        <input type="hidden" name="quantity[]" value="{{ item.quantity }}">
+                        <input type="hidden" name="price[]" value="{{ item.price }}">
 
-                <div class="d-flex align-items-center mb-3">
-                    <img src="{{ item.image_url }}" alt="{{ item.name }}" class="me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                    <p class="mb-2">{{ item.name }} - {{ item.quantity }} x ₱{{ item.price }}0</p>
-                </div>
-                {% endfor %}
+                        <div class="cart-item d-flex align-items-center mb-3">
+                            <img src="data:image/jpeg;base64,{{ item.image_url }}" alt="{{ item.name }}" class="me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                            <p class="mb-2 text-white">{{ item.name }} - {{ item.quantity }} x ₱{{ item.price }}0</p>
+                            <button type="button" class="btn-remove ms-auto" onclick="removeItem('{{ item.item_id }}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                        {% endfor %}
 
-                <div class="border-top pt-2">
-                    <p class="text-light"><strong>Total Amount: </strong>₱{{ total_amount }}0</p>
-                    <button type="button" class="btn btn-success w-100 mt-3" onclick="confirmOrder()">ORDER NOW</button>
+                        <div class="border-top pt-2">
+                            <p class="text-light"><strong>Total Amount: </strong>₱{{ total_amount }}0</p>
+                            <button type="button" class="btn btn-success w-100 mt-3" onclick="confirmOrder()">ORDER NOW</button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
-</div>
+
+   
 
 <script>
     function confirmOrder() {
-            alert("Order placed successfully!");
-        }
+        alert("Order placed successfully!");
+    }
+
+    function removeItem(itemId) {
+        alert("Item removed successfully!"); // Add logic to remove item
+    }
 </script>
 
-<script src="{{url_for('static', filename = 'js/orders.js')}}"></script>
+<script src="{{ url_for('static', filename='js/orders.js') }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

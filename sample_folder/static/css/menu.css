@@ -1,19 +1,7 @@
-
+/* Custom Card Style */
 .card-custom {
     border: none;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-.btn-custom {
-    background-color: #0d7200;
-    border: none;
-}
-
-.btn-custom:hover{
-    background-color: rgb(0, 0, 0);
-    color: rgb(255, 250, 250);
-}
-
-.card-custom {
     height: 320px;             /* Set a fixed height for the cards */
     display: flex;
     flex-direction: column;
@@ -21,6 +9,7 @@
     overflow-y: hidden;        /* Prevent height adjustment */
 }
 
+/* Card Body */
 .card-custom .card-body {
     flex-grow: 1;
     display: flex;
@@ -28,11 +17,104 @@
     justify-content: space-between;
 }
 
+/* Button Style */
+.btn-custom {
+    background-color: #0d7200;
+    border: none;
+}
+
+/* Button Hover Effect */
+.btn-custom:hover {
+    background-color: rgb(0, 0, 0);
+    color: rgb(255, 250, 250);
+}
+
+/* Card Image */
 .card-img-top {
     height: 120px;             /* Set a fixed height for images */
     object-fit: cover;         /* Ensure images fit within the card */
 }
 
+/* Success Button */
 .btn-success {
     width: 100%;
+}
+
+/* Full Page Background */
+.bg-container {
+    width: 100vw;
+    height: 100vh;
+    background: url("../static/images/bg1.jpg") no-repeat center center;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-y: auto;
+}
+
+/* Fixed Cart Styling */
+.cart-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    background: white;
+    z-index: 1000;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Center Content and Limit Width */
+.menu-container {
+    width: 90%;
+    max-width: 1200px;
+    margin-top: 40px;
+}
+
+/* Minimize Button Style */
+.btn-minimize {
+    background-color: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    position: absolute;
+    top: 5px;
+    right: 10px;
+}
+
+/* Hide Cart Content when Minimized */
+.cart-hidden {
+    display: none;
+}
+
+/* Optional: Add smooth transition when minimizing */
+#cart-content {
+    transition: max-height 0.3s ease-in-out;
+}
+
+/* 🎯 Remove spinner/arrows from number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.logo-container {
+    display: inline-block;
+    animation: bounce 1.5s infinite ease-in-out;
+}
+
+/* Bounce Keyframes */
+@keyframes bounce {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
 }

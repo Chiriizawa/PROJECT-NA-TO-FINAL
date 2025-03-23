@@ -1,5 +1,20 @@
 const cart = {};
 
+// Function to toggle cart visibility
+function toggleCart() {
+    var cartContent = document.getElementById("cart-content");
+    var cartContainer = document.querySelector(".cart-container");
+
+    if (cartContent.style.display === "none") {
+        cartContent.style.display = "block"; // Show cart
+        cartContainer.style.height = "auto"; // Reset height
+    } else {
+        cartContent.style.display = "none"; // Hide cart
+        cartContainer.style.height = "40px"; // Set minimized height
+    }
+}
+
+// Function to add items to cart
 function addToCart(name, price) {
     if (cart[name]) {
         cart[name].quantity += 1;
@@ -9,6 +24,7 @@ function addToCart(name, price) {
     renderCart();
 }
 
+// Function to remove items from cart
 function removeFromCart(name) {
     if (cart[name]) {
         if (cart[name].quantity > 1) {
@@ -20,6 +36,18 @@ function removeFromCart(name) {
     renderCart();
 }
 
+// Function to update quantity when typed manually
+function updateQuantity(name, newQuantity) {
+    let quantity = parseInt(newQuantity);
+    if (quantity > 0) {
+        cart[name].quantity = quantity;
+    } else {
+        delete cart[name]; // Remove item if quantity is 0 or invalid
+    }
+    renderCart();
+}
+
+// Function to render cart
 function renderCart() {
     const cartItems = document.getElementById("cart-items");
     cartItems.innerHTML = "";
@@ -35,7 +63,8 @@ function renderCart() {
                 </div>
                 <div class="d-flex align-items-center">
                     <button class="btn btn-sm btn-outline-secondary" onclick="removeFromCart('${name}')">-</button>
-                    <input type="text" class="form-control text-center mx-1" style="width: 50px;" value="${item.quantity}" readonly>
+                    <input type="number" class="form-control text-center mx-1" style="width: 50px;" 
+                        value="${item.quantity}" onchange="updateQuantity('${name}', this.value)">
                     <button class="btn btn-sm btn-outline-secondary me-3" onclick="addToCart('${name}', ${item.price})">+</button>
                     <button class="btn btn-sm btn-outline-danger ms-2" onclick="delete cart['${name}']; renderCart();">×</button>
                 </div>
@@ -45,11 +74,10 @@ function renderCart() {
     document.getElementById("total-amount").textContent = `₱${subTotal}.00`;
 }
 
-
-
+// Function to update checkout form with cart data
 function updateCartForm() {
     let cartInputs = document.getElementById("cart-inputs");
-    cartInputs.innerHTML = "";  // Clear previous inputs
+    cartInputs.innerHTML = "";  
 
     let index = 0;
     for (const [name, item] of Object.entries(cart)) {
@@ -62,6 +90,7 @@ function updateCartForm() {
     }
 }
 
+// Ensure cart data is updated before submitting
 document.getElementById("checkout-form").addEventListener("submit", function () {
-    updateCartForm();  // Ensure cart data is added before submitting
+    updateCartForm();
 });

@@ -5,6 +5,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_index.css') }}">
+<!-- Include Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -25,5 +27,34 @@
         <h2>Customers</h2>
         <p>0</p>
     </div>
+
+    <!-- Pie Chart Section -->
+    <div class="card">
+        <h2>Sales Overview</h2>
+        <canvas id="salesPieChart" width="400" height="400"></canvas>
+    </div>
 </div>
+
+<!-- Pie Chart Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctx = document.getElementById('salesPieChart').getContext('2d');
+        var salesPieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Product A', 'Product B', 'Product C'],
+                datasets: [{
+                    label: 'Sales',
+                    data: [30, 50, 20], // Example data (you can replace it dynamically)
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    });
+</script>
+
 {% endblock %}

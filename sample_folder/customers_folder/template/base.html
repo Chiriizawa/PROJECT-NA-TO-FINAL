@@ -14,28 +14,31 @@
 </head>
 <body style="background-color: grey;">
 
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg p-3 shadow-sm" style="background-color: grey;">
         <div class="container-fluid d-flex align-items-center">
-            <a class="navbar-brand text-light me-auto ms-3 logo" href="{{ url_for('customer.index') }}">
-                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="logo" width="50" height="50" class="me-2">
+            <!-- Logo with Bouncing Animation -->
+            <a class="navbar-brand text-light me-auto ms-3 logo-container" href="{{ url_for('customer.index') }}">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="logo" width="100" height="100"
+                    class="me-2 logo">
             </a>
             <div class="navbar-collapse show justify-content-center text-center" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
-                        <a class="nav-link text-light mx-3 nav-link-underline text-light" href="{{ url_for('customer.index') }}">Home</a>
+                        <a class="nav-link text-light mx-3 nav-link-underline text-light"
+                            href="{{ url_for('customer.index') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-light mx-3 nav-link-underline text-light" href="{{ url_for('customer.menu') }}">Menu</a>
+                        <a class="nav-link text-light mx-3 nav-link-underline text-light"
+                            href="{{ url_for('customer.menu') }}">Menu</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-light mx-3 nav-link-underline text-light" href="{{ url_for('customer.orders') }}">Orders</a>
+                        <a class="nav-link text-light mx-3 nav-link-underline text-light"
+                            href="{{ url_for('customer.orders') }}">Orders</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link mx-3 nav-link-underline text-light" href="#footer">About Us</a>
-                    </li>                    
+                    </li>
                 </ul>
-                
             </div>
             {% if session.get('user') %}
                 <div class="position-relative">

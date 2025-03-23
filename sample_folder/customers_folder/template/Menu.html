@@ -1,11 +1,24 @@
 {% extends "base.html" %}
 
+
 {% block head %}
     <title>Crave On - Menu</title>
     <link rel="stylesheet" href="{{ url_for('static', filename = 'css/menu.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename = 'css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Full Page Background */
+        .bg-container {
+            width: 100vw;
+            height: 100vh;
+            background: url("../static/images/bg1.jpg") no-repeat center center;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+
         /* Fixed Cart Styling */
         .cart-container {
             position: fixed;
@@ -19,62 +32,80 @@
             background: white;
             z-index: 1000;
         }
+
+        /* Center Content and Limit Width */
+        .menu-container {
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 40px;
+        }
     </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid my-5">
-    <div class="container mt-5">
-        <div class="row">
-            {% for item in items %}
-            <div class="col-lg-3 col-md-4 col-sm-6 mb-4" id="item-{{ loop.index }}" data-category="{{ item[3] }}">
-                <div class="card shadow-sm h-100">
-                    {% if item[3] %}
-                        <img src="data:image/jpeg;base64,{{ item[3] }}" class="card-img-top" alt="{{ item[1] }}">
-                    {% else %}
-                        <img src="#" class="card-img-top" alt="Default Image">
-                    {% endif %}
 
-                    <div class="card-body">
-                        <h5 class="card-title">{{ item[1] }}</h5>
-                        <div class="mb-2">
-                            <span class="text-muted">Price:</span>
-                            <span class="fw-bold">₱{{ item[2] }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <button class="btn btn-primary btn-sm px-3" onclick="addToCart('{{ item[1] }}', '{{ item[2] }}')">
-                                <i class="fas fa-plus me-1"></i> ADD
-                            </button>
+
+<!-- Background Container -->
+<div class="bg-container">
+    <!-- Main Content Container -->
+    <div class="container-fluid menu-container my-5">
+        <div class="container mt-5">
+            <div class="row">
+                {% for item in items %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4" id="item-{{ loop.index }}" data-category="{{ item[3] }}">
+                    <div class="card shadow-sm h-100">
+                        {% if item[3] %}
+                            <img src="data:image/jpeg;base64,{{ item[3] }}" class="card-img-top" alt="{{ item[1] }}">
+                        {% else %}
+                            <img src="#" class="card-img-top" alt="Default Image">
+                        {% endif %}
+
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item[1] }}</h5>
+                            <div class="mb-2">
+                                <span class="text-muted">Price:</span>
+                                <span class="fw-bold">₱{{ item[2] }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button class="btn btn-primary btn-sm px-3" onclick="addToCart('{{ item[1] }}', '{{ item[2] }}')">
+                                    <i class="fas fa-plus me-1"></i> ADD
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+                {% else %}
+                    <p class="text-center">No items available.</p>
+                {% endfor %}
             </div>
-            {% else %}
-                <p class="text-center">No items available.</p>
-            {% endfor %}
         </div>
     </div>
-</div>
 
-
-<!-- Cart Section -->
-<div class="cart-container p-3 shadow-sm border-0">
-    <h5 class="fw-bold mb-3">Items</h5>
-    <div id="cart-items">
-        <p class="text-muted"></p>
+    <!-- Cart Section -->
+     
+    <div class="cart-container p-3 shadow-sm border-0" id="cart-container">
+        <!-- Minimize Button -->
+        <button id="btn-minimize" class="btn-minimize" onclick="toggleCart()">X</button>
+        
+        <!-- Cart Content (Wrapped to toggle visibility) -->
+        <div id="cart-content">
+            <h5 class="fw-bold mb-3">Items</h5>
+            <div id="cart-items">
+                <p class="text-muted">Your cart is empty.</p>
+            </div>
+            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                <span class="fw-bold">Total</span>
+                <span class="fw-bold" id="total-amount">₱0.00</span>
+            </div>
+    
+            <!-- Checkout Form with Hidden Inputs -->
+            <form id="checkout-form" action="{{ url_for('customer.orders') }}" method="POST">
+                <div id="cart-inputs"></div> <!-- This will store hidden input fields -->
+                <button type="submit" class="btn btn-success">Checkout</button>
+            </form>
+        </div>
     </div>
-    <div class="d-flex justify-content-between align-items-center border-top pt-3">
-        <span class="fw-bold">Total</span>
-        <span class="fw-bold" id="total-amount">₱0.00</span>
-    </div>
-
-    <!-- Checkout Form with Hidden Inputs -->
-    <form id="checkout-form" action="{{ url_for('customer.orders') }}" method="POST">
-        <div id="cart-inputs"></div> <!-- This will store hidden input fields -->
-        <button type="submit" class="btn btn-success">Checkout</button>
-    </form>
-</div>
-
+    
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 <script src="{{url_for('static', filename = 'js/menu.js')}}"></script>

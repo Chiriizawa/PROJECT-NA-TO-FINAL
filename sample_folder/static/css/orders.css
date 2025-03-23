@@ -1,12 +1,164 @@
-.cart-item { 
-    border-bottom: 1px solid #ddd; padding: 5px 0; }
-        
-.cart-item:last-child { 
-    border-bottom: none; }
-        
-.btn-remove { 
-    background-color: transparent; border: none; color: red; cursor: pointer; }
-        
-.quantity-control { 
-    width: 35px; }
+/* Cart Item Styles with Background */
+.cart-item {
+    background-image: url("../images/bg1.jpg");
+    background-size: cover;
+    background-position: center;
+    border-bottom: 1px solid #ddd;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    color: #fff;
+}
 
+/* Last Cart Item - No Border */
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+/* Remove Button */
+.btn-remove {
+    background-color: transparent;
+    border: none;
+    color: red;
+    cursor: pointer;
+}
+
+/* Quantity Input Control */
+.quantity-control {
+    width: 35px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 3px;
+    text-align: center;
+    border-radius: 5px;
+}
+
+/* Background Style */
+.bg-container {
+    background: url("../images/bg1.jpg") no-repeat center center;
+    background-size: cover;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Main Content Wrapper to Push Footer */
+.content-wrapper {
+    flex: 1;
+}
+
+/* Cart Container Style */
+.cart-container {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+/* Cart Item Styles */
+.cart-item {
+    border-bottom: 1px solid #ddd;
+    padding: 5px 0;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+/* Total and Order Button */
+.text-light {
+    color: #fff !important;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+/* Footer Style */
+footer {
+    background-color: #343a40;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    width: 100%;
+    margin-top: auto;
+}
+
+/* Footer Links and Social Icons */
+footer .footer-container {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    text-align: left;
+}
+
+footer .footer-column {
+    flex: 1;
+    min-width: 200px;
+    margin-bottom: 15px;
+}
+
+footer .footer-column h5 {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+footer .footer-column p,
+footer .footer-column a {
+    color: #ccc;
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+footer .footer-icons {
+    display: flex;
+    gap: 10px;
+    justify-content: left;
+    margin-top: 10px;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Prevent content from being cut off */
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Flex Container to Push Footer */
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+.logo-container {
+    display: inline-block;
+    animation: bounce 1.5s infinite ease-in-out;
+}
+
+/* Bounce Keyframes */
+@keyframes bounce {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
