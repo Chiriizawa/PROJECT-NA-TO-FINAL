@@ -1,7 +1,8 @@
-from flask import Flask, Blueprint, render_template, request, flash, session, redirect, url_for
+from flask import Flask, Blueprint, render_template, request, flash, session, redirect, url_for, current_app
 import mysql.connector
 import base64
 import re
+from flask_mail import Message
 from flask_bcrypt import Bcrypt
 
 customer = Blueprint('customer', __name__, template_folder="template") 
@@ -152,8 +153,7 @@ def signup():
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         conn = connect_db()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO customer (name, email, contact, address, password) VALUES (%s, %s, %s, %s, %s)",
-                       (name, email, contact, address, hashed_password))
+        cursor.execute("INSERT INTO customer (name, email, contact, address, password) VALUES (%s, %s, %s, %s, %s)",(name, email, contact, address, hashed_password))
         conn.commit()
         cursor.close()
         conn.close()
@@ -222,3 +222,23 @@ def account():
     connection.close()
 
     return render_template("account.html", data=data)
+
+@customer.route('/verify-account')
+def verify():
+    try:
+        mail = current_app.extensions.get('mail') 
+
+        if not mail:
+            return "ERROR: Mail extension not initialized!"
+
+        message = Message(
+            subject="Holabels",
+            recipients=["kzabarquez24@gmail.com"],
+            sender=current_app.config['MAIL_USERNAME'] 
+        )
+        message.body = "HELLLOO LOVEEEYYY"
+
+        mail.send(message)
+        return "MESSAGE SENT SUCCESSFULLY"
+    except Exception as e:
+        return f"FAILED TO SEND MESSAGE: {str(e)}"
