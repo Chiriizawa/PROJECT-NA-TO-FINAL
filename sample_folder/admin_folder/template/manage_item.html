@@ -66,23 +66,23 @@
                         </button>
                     
                         <!-- Modal for Deleting Item -->
-<div class="modal fade" id="deleteModal{{ item[0] }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ item[0] }}" aria-hidden="true">
-    <div class="modal-dialog d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel{{ item[0] }}">Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to delete <strong>{{ item[1] }}</strong>? This action cannot be undone.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <a href="{{ url_for('admin.delete_item', item_id=item[0]) }}" class="btn btn-danger">Delete</a>
+        <div class="modal fade" id="deleteModal{{ item[0] }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ item[0] }}" aria-hidden="true">
+            <div class="modal-dialog d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel{{ item[0] }}">Confirm Delete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete <strong>{{ item[1] }}</strong>? This action cannot be undone.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <a href="{{ url_for('admin.delete_item', item_id=item[0]) }}" class="btn btn-danger">Delete</a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
                     
                       <!-- Modal for Editing Item -->
@@ -91,7 +91,6 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editModalLabel{{ item[0] }}">Edit Item</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ url_for('admin.edit_item', item_id=item[0]) }}" method="POST" enctype="multipart/form-data">
                 <div class="modal-body">

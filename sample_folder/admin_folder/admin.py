@@ -159,16 +159,6 @@ def users():
 
     return render_template('manage_users.html', data=data)
 
-
-@admin.route('/accept_order/<int:order_id>')
-def accept_order(order_id):
-    conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE orders SET status='Accepted' WHERE order_id=%s", (order_id,))
-    conn.commit()
-    conn.close()
-    return redirect('/manage_orders')
-
 @admin.route('/delete_order/<int:order_id>')
 def delete_order(order_id):
     conn = connect_db()
@@ -178,24 +168,3 @@ def delete_order(order_id):
     conn.close()
     return redirect('/manage_orders')
 
-
-"""@admin.route('/place_order', methods=['POST'])
-def place_order():
-    if request.method == 'POST':
-        customer_id = request.form.get('customer_id')
-        total_price = request.form.get('total_price')
-        items = request.form.getlist('items') 
-        conn = connect_db()
-        cursor = conn.cursor()
-        
-        cursor.execute("INSERT INTO orders (total_price, customer_id, status) VALUES (%s, %s, %s)", (total_price, customer_id, 'Pending'))
-        order_id = cursor.lastrowid 
-
-        for item_id in items:
-            cursor.execute("INSERT INTO order_items (order_id, item_id) VALUES (%s, %s)", (order_id, item_id))
-
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        return redirect(url_for('user_orders'))"""

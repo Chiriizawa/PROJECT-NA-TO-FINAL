@@ -9,7 +9,7 @@
     <style>
         /* Full Page Background */
         .bg-container {
-            width: 100vw;
+            width: 100%;
             height: 100vh;
             background: url("../static/images/bg1.jpg") no-repeat center center;
             background-size: cover;
@@ -85,9 +85,9 @@
      
     <div class="cart-container p-3 shadow-sm border-0" id="cart-container">
         <!-- Minimize Button -->
-        <button id="btn-minimize" class="btn-minimize" onclick="toggleCart()">X</button>
+        <button id="btn-minimize" class="btn-minimize" onclick="toggleCart()"><i class="fa-solid fa-compress"></i></button>
         
-        <!-- Cart Content (Wrapped to toggle visibility) -->
+        <!-- Cart Content -->
         <div id="cart-content">
             <h5 class="fw-bold mb-3">Items</h5>
             <div id="cart-items">
@@ -100,7 +100,7 @@
     
             <!-- Checkout Form with Hidden Inputs -->
             <form id="checkout-form" action="{{ url_for('customer.orders') }}" method="POST">
-                <div id="cart-inputs"></div> <!-- This will store hidden input fields -->
+                <div id="cart-inputs"></div>
                 <button type="submit" class="btn btn-success">Checkout</button>
             </form>
         </div>

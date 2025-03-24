@@ -2,6 +2,7 @@ from flask import Flask, Blueprint, render_template, request, flash, session, re
 import mysql.connector
 import base64
 import re
+import random
 from flask_mail import Message
 from flask_bcrypt import Bcrypt
 
@@ -233,10 +234,10 @@ def verify():
 
         message = Message(
             subject="Holabels",
-            recipients=["@gmail.com"],
+            recipients=["josonreynard@gmail.com"],
             sender=current_app.config['MAIL_USERNAME'] 
         )
-        message.body = "HELLLOO"
+        message.body = "SENT SENT"
 
         mail.send(message)
         return "MESSAGE SENT SUCCESSFULLY"
