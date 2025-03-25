@@ -33,12 +33,15 @@
                     <td>{{ user[4] }}</td> 
                     <td>{{ user[5] }}</td> 
                     <td>
-                        
-                        <a href="#" class="btn btn-warning btn-sm">
+                        <!-- Edit Button triggers the edit modal -->
+                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal" 
+                            onclick="setEditUserData('{{ user[0] }}', '{{ user[1] }}', '{{ user[2] }}', '{{ user[3] }}', '{{ user[4] }}')">
                             <i class="fas fa-edit"></i> Edit
-                        </a>
-                        
-                        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" onclick="setDeleteUserId('{{ user[0] }}')">
+                        </button>
+
+                        <!-- Delete Button triggers the delete modal -->
+                        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                            onclick="setDeleteUserId('{{ user[0] }}')">
                             <i class="fas fa-trash"></i> Delete
                         </button>
                     </td>
@@ -49,7 +52,7 @@
     </div>
 </div>
 
-
+<!-- Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -62,6 +65,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <!-- ✅ Corrected delete URL dynamically -->
                 <a id="confirmDeleteBtn" href="#" class="btn btn-danger">Delete</a>
             </div>
         </div>
@@ -69,9 +73,68 @@
 </div>
 
 
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <!-- ✅ Corrected action with url_for -->
+            <form method="POST" action="{{ url_for('admin.edit_user') }}">
+                <div class="modal-body">
+                    <!-- Hidden input for user ID -->
+                    <input type="hidden" id="editUserId" name="user_id">
+
+                    <!-- Name Field -->
+                    <div class="mb-3">
+                        <label for="editName" class="form-label">Name:</label>
+                        <input type="text" class="form-control" id="editName" name="name" required>
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label">Email:</label>
+                        <input type="email" class="form-control" id="editEmail" name="email" required>
+                    </div>
+
+                    <!-- Phone Number Field -->
+                    <div class="mb-3">
+                        <label for="editContact" class="form-label">Phone Number:</label>
+                        <input type="text" class="form-control" id="editContact" name="contact" required>
+                    </div>
+
+                    <!-- Address Field -->
+                    <div class="mb-3">
+                        <label for="editAddress" class="form-label">Address:</label>
+                        <input type="text" class="form-control" id="editAddress" name="address" required>
+                    </div>
+                </div>
+
+                <!-- Modal Footer with Buttons -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Update User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for handling modal data -->
 <script>
 function setDeleteUserId(userId) {
-    document.getElementById('confirmDeleteBtn').href = "/delete_user/" + userId;
+    document.getElementById('confirmDeleteBtn').href = "{{ url_for('admin.delete_user', user_id=0) }}".replace('0', userId);
+}
+
+function setEditUserData(id, name, email, contact, address) {
+    document.getElementById('editUserId').value = id;
+    document.getElementById('editName').value = name;
+    document.getElementById('editEmail').value = email;
+    document.getElementById('editContact').value = contact;
+    document.getElementById('editAddress').value = address;
 }
 </script>
 {% endblock %}

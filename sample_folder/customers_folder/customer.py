@@ -6,17 +6,18 @@ import random
 from flask_mail import Message
 from flask_bcrypt import Bcrypt
 
-customer = Blueprint('customer', __name__, template_folder="template") 
+customer = Blueprint('customer', __name__, template_folder="template")
 bcrypt = Bcrypt()
 
-
+# ✅ Database Configuration
 db_config = {
-    'host':'localhost',
-    'database':'craveon',
-    'user':'root',
-    'password':'',
+    'host': 'localhost',
+    'database': 'craveon',
+    'user': 'root',
+    'password': '',
 }
 
+# ✅ Connect to Database
 def connect_db():
     return mysql.connector.connect(**db_config)
 
@@ -27,11 +28,25 @@ cursor = conn.cursor()
 def b64encode_filter(data):
     return base64.b64encode(data).decode('utf-8') if data else ''
 
+# ✅ Make session permanent and prevent cache
+@customer.before_request
+def make_session_permanent():
+    session.permanent = True  # Keep session alive until logout
 
+@customer.after_request
+def add_no_cache_header(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, private, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+# ✅ Home Page
 @customer.route('/')
 def index():
     if 'user' not in session:
+        flash("You need to log in first.", "info")
         return redirect(url_for('customer.login'))
+
     connection = connect_db()
     cursor = connection.cursor()
     cursor.execute("SELECT item_id, item_name, price, image FROM items")
@@ -40,20 +55,22 @@ def index():
 
     formatted_items = []
     for item_id, name, price, img in items:
-        if isinstance(img, bytes):
-            img_base64 = base64.b64encode(img).decode('utf-8')
-        else:
-            img_base64 = None 
-
+        img_base64 = base64.b64encode(img).decode('utf-8') if isinstance(img, bytes) else None
         formatted_items.append((item_id, name, price, img_base64))
 
     return render_template('index.html', items=formatted_items)
 
+# ✅ Login Route
 @customer.route('/login', methods=['GET', 'POST'])
 def login():
+    if 'user' in session:
+        flash("You are already logged in.", "info")
+        return redirect(url_for("customer.index"))
+
     if request.method == "POST":
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "").strip()
+        
         conn = connect_db()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM customer WHERE email = %s", (email,))
@@ -62,20 +79,22 @@ def login():
         conn.close()
 
         if user and bcrypt.check_password_hash(user[5], password):
-            session["user"] = user[1]
-            
+            session["user"] = user[1]  # Set user name or ID in session
+            flash("Login successful!", "success")
             return redirect(url_for("customer.index"))
 
-        flash("Invalid credentials.", "danger")
+        flash("Invalid email or password.", "danger")
 
     return render_template("customerlogin.html")
 
+# ✅ Logout Route
 @customer.route("/logout")
 def logout():
-    session.pop("user", None)
-  #  flash("Logged out successfully!", "success")
-    return redirect(url_for("customer.index"))
+    session.clear()  # ✅ Clear all session data
+    flash("Logged out successfully!", "success")
+    return redirect(url_for("customer.login"))
 
+# ✅ Sign Up Route
 @customer.route('/SignUp', methods=['GET', 'POST'])
 def signup():
     errors = {}  # Store individual field errors
@@ -88,11 +107,11 @@ def signup():
         password = request.form.get('password', '').strip()
         confirm_password = request.form.get('confirm-password', '').strip()
 
-        # Validate name
+        # ✅ Validate name
         if not name:
             errors['name'] = "Name is required."
 
-        # Validate email
+        # ✅ Validate email
         if not email:
             errors['email'] = "Email is required."
         else:
@@ -100,13 +119,12 @@ def signup():
             if not re.match(email_pattern, email):
                 errors['email'] = "Invalid email format."
 
-        # Validate contact
+        # ✅ Validate contact
         if not contact:
             errors['contact'] = "Contact number is required."
         elif not contact.isdigit() or len(contact) != 11:
             errors['contact'] = "Contact number must be 11 digits."
         else:
-            # Check if contact number is already registered
             conn = connect_db()
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM customer WHERE contact = %s", (contact,))
@@ -115,26 +133,25 @@ def signup():
             conn.close()
 
             if existing_contact:
-                errors['contact'] = "Contact number already registered. Please use a different one."
+                errors['contact'] = "Contact number already registered."
 
-
-        # Validate address
+        # ✅ Validate address
         if not address:
             errors['address'] = "Address is required."
 
-        # Validate password
+        # ✅ Validate password
         if not password:
             errors['password'] = "Password is required."
         elif len(password) < 8:
             errors['password'] = "Password must be at least 8 characters."
 
-        # Validate confirm password
+        # ✅ Confirm password validation
         if not confirm_password:
             errors['confirm_password'] = "Confirm password is required."
         elif password != confirm_password:
             errors['confirm_password'] = "Passwords do not match."
 
-        # Check if email already exists
+        # ✅ Check if email already exists
         if not errors.get('email'):
             conn = connect_db()
             cursor = conn.cursor()
@@ -146,15 +163,16 @@ def signup():
             if existing_user:
                 errors['email'] = "Email already registered. Please log in."
 
-        # If there are errors, re-render form with errors
+        # ✅ If there are errors, re-render form
         if errors:
             return render_template("customersignup.html", errors=errors)
 
-        # Insert user if no errors
+        # ✅ Insert user if no errors
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         conn = connect_db()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO customer (name, email, contact, address, password) VALUES (%s, %s, %s, %s, %s)",(name, email, contact, address, hashed_password))
+        cursor.execute("INSERT INTO customer (name, email, contact, address, password) VALUES (%s, %s, %s, %s, %s)",
+                       (name, email, contact, address, hashed_password))
         conn.commit()
         cursor.close()
         conn.close()
@@ -164,10 +182,12 @@ def signup():
 
     return render_template("customersignup.html", errors={})
 
+# ✅ Menu Route
 @customer.route('/Menu')
 def menu():
     if 'user' not in session:
         return redirect(url_for('customer.login'))
+
     connection = connect_db()
     cursor = connection.cursor()
     cursor.execute("SELECT item_id, item_name, price, image FROM items")
@@ -176,19 +196,16 @@ def menu():
 
     formatted_items = []
     for item_id, name, price, img in items:
-        if isinstance(img, bytes):
-            img_base64 = base64.b64encode(img).decode('utf-8')
-        else:
-            img_base64 = None 
-
+        img_base64 = base64.b64encode(img).decode('utf-8') if isinstance(img, bytes) else None
         formatted_items.append((item_id, name, price, img_base64))
 
     return render_template('Menu.html', items=formatted_items)
 
+# ✅ Orders Route
 @customer.route('/Orders', methods=['GET', 'POST'])
 def orders():
     if 'user' not in session:
-        return redirect(url_for('customer.login')) 
+        return redirect(url_for('customer.login'))
 
     cart_items = []
     index = 0
@@ -201,33 +218,35 @@ def orders():
         index += 1
 
     total_amount = sum(item['price'] * item['quantity'] for item in cart_items)
-    
+
     connection = connect_db()
     cursor = connection.cursor()
-    cursor.execute("SELECT name, email, contact, address FROM customer")
-    users = cursor.fetchall()
+    cursor.execute("SELECT name, email, contact, address FROM customer WHERE email = %s", (session['user'],))
+    user = cursor.fetchone()
     connection.close()
 
-    return render_template('orders.html', cart_items=cart_items, total_amount=total_amount, users=users)
+    return render_template('orders.html', cart_items=cart_items, total_amount=total_amount, user=user)
 
+# ✅ Account Route
 @customer.route('/Account')
 def account():
+    if 'user' not in session:
+        return redirect(url_for('customer.login'))
 
     connection = connect_db()
     cursor = connection.cursor()
-
-    cursor.execute('SELECT name, email, contact, address FROM customer')
-    data = cursor.fetchall()
-
+    cursor.execute('SELECT name, email, contact, address FROM customer WHERE email = %s', (session['user'],))
+    data = cursor.fetchone()
     cursor.close()
     connection.close()
 
     return render_template("account.html", data=data)
 
+# ✅ Verify Account Route (Test Email)
 @customer.route('/verify-account')
 def verify():
     try:
-        mail = current_app.extensions.get('mail') 
+        mail = current_app.extensions.get('mail')
 
         if not mail:
             return "ERROR: Mail extension not initialized!"
@@ -235,7 +254,7 @@ def verify():
         message = Message(
             subject="Holabels",
             recipients=["josonreynard@gmail.com"],
-            sender=current_app.config['MAIL_USERNAME'] 
+            sender=current_app.config['MAIL_USERNAME']
         )
         message.body = "SENT SENT"
 
