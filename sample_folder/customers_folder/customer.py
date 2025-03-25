@@ -4,7 +4,6 @@ import base64
 import re
 import random
 from flask_mail import Message
-from werkzeug.security import check_password_hash
 from flask_bcrypt import Bcrypt
 
 customer = Blueprint('customer', __name__, template_folder="template") 
@@ -53,7 +52,7 @@ def login():
     if request.method == "POST":
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "").strip()
-
+        
         conn = connect_db()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM customer WHERE email = %s", (email,))
@@ -61,40 +60,64 @@ def login():
         cursor.close()
         conn.close()
 
-        if user and check_password_hash(user[5], password):
-            session["user"] = user[1]
-            session["email"] = email  # Store email for verification
+        if user and bcrypt.check_password_hash(user[5], password):
+            session["temp_user"] = user[1]  
+            session["verification_code"] = str(random.randint(100000, 999999)) 
 
-            # Generate a random 6-digit verification code
-            verification_code = str(random.randint(100000, 999999))
-            session["verification_code"] = verification_code  # Store in session
-
-            # Send verification email
-            send_verification_email(email, verification_code)
-
-            flash("A verification code has been sent to your email.", "info")
+            # Send email
+            mail = current_app.extensions.get('mail')
+            if mail:
+                message = Message(
+                    subject="Your Verification Code",
+                    recipients=[email],  # Send to the user's email
+                    sender=current_app.config['MAIL_USERNAME'],
+                    body=f"Your verification code is {session['verification_code']}"
+                )
+                mail.send(message)
+            
             return redirect(url_for("customer.verify"))
 
-        flash("Invalid email or password.", "danger")
+        flash("Invalid credentials.", "danger")
 
     return render_template("customerlogin.html")
-@customer.route("/Verify-Account")
-def verify():
-        mail = current_app.extensions.get('mail') 
+
+def send_verification_email(email, code):
+    try:
+        mail = current_app.extensions.get('email')
 
         if not mail:
-            return "ERROR: Mail extension not initialized!"
+            return False
 
         message = Message(
-            subject="Holabels",
-            recipients=["@gmail.com"],
-            sender=current_app.config['MAIL_USERNAME'] 
+            subject="Your Verification Code",
+            recipients=[email],
+            sender=current_app.config['MAIL_USERNAME']
         )
-        message.body = "HELLLOO"
+        message.body = f"Your verification code is: {code}"
 
         mail.send(message)
-        return render_template("verify.html")
+        return True
+    except Exception as e:
+        print(f"FAILED TO SEND EMAIL: {str(e)}")
+        return False
     
+@customer.route("/Verify-Account", methods=['GET', 'POST'])
+def verify():
+    if request.method == "POST":
+        entered_code = "".join([
+            request.form.get("code1", ""), request.form.get("code2", ""),
+            request.form.get("code3", ""), request.form.get("code4", ""),
+            request.form.get("code5", ""), request.form.get("code6", "")
+        ])
+
+        if entered_code == session.get("verification_code"):
+            session["user"] = session.pop("temp_user") 
+            session.pop("verification_code", None)  
+            return redirect(url_for("customer.index"))
+        else:
+            flash("Invalid verification code.", "danger")
+
+    return render_template("verify.html")
 @customer.route("/logout")
 def logout():
     session.pop("user", None)

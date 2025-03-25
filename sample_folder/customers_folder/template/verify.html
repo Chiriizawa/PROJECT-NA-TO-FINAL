@@ -38,33 +38,52 @@
 </head>
 <body>
     <div class="verify-container">
-        <h2>Please Verify Account</h2>
-        <p>Enter the six-digit code we sent to your email address to verify your account.</p>
-        <div class="d-flex justify-content-center">
-            <input type="text" class="code-input" maxlength="1" oninput="moveToNext(this, 0)" onkeydown="moveToPrev(event, 0)">
-            <input type="text" class="code-input" maxlength="1" oninput="moveToNext(this, 1)" onkeydown="moveToPrev(event, 1)">
-            <input type="text" class="code-input" maxlength="1" oninput="moveToNext(this, 2)" onkeydown="moveToPrev(event, 2)">
-            <input type="text" class="code-input" maxlength="1" oninput="moveToNext(this, 3)" onkeydown="moveToPrev(event, 3)">
-            <input type="text" class="code-input" maxlength="1" oninput="moveToNext(this, 4)" onkeydown="moveToPrev(event, 4)">
-            <input type="text" class="code-input" maxlength="1" oninput="moveToNext(this, 5)" onkeydown="moveToPrev(event, 5)">
-        </div>
-        <button type="submit" class="btn btn-primary mt-3">Verify</button>
+        <h2>Verify your Account</h2>
+        <p>Enter the six-digit code sent to your email.</p>
+        <form method="POST" action="{{ url_for('customer.verify') }}">
+            <div class="d-flex justify-content-center">
+                <input type="text" name="code1" class="code-input" maxlength="1" required>
+                <input type="text" name="code2" class="code-input" maxlength="1" required>
+                <input type="text" name="code3" class="code-input" maxlength="1" required>
+                <input type="text" name="code4" class="code-input" maxlength="1" required>
+                <input type="text" name="code5" class="code-input" maxlength="1" required>
+                <input type="text" name="code6" class="code-input" maxlength="1" required>
+            </div>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container">
+                    {% for category, message in messages %}
+                        <div class="text-danger alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% endwith %}
+            <button type="submit" class="btn btn-primary mt-3">Verify</button>
+        </form>
     </div>
 
     <script>
-        function moveToNext(input, index) {
-            const inputs = document.querySelectorAll('.code-input');
-            if (input.value && index < inputs.length - 1) {
-                inputs[index + 1].focus();
-            }
-        }
-
-        function moveToPrev(event, index) {
-            const inputs = document.querySelectorAll('.code-input');
-            if (event.key === "Backspace" && !event.target.value && index > 0) {
-                inputs[index - 1].focus();
-            }
-        }
+        document.addEventListener("DOMContentLoaded", function () {
+            const inputs = document.querySelectorAll(".code-input");
+    
+            inputs.forEach((input, index) => {
+                input.addEventListener("input", (e) => {
+                    e.target.value = e.target.value.replace(/\D/g, ""); // Allow only numbers
+                    
+                    if (e.target.value && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                });
+    
+                input.addEventListener("keydown", (e) => {
+                    if (e.key === "Backspace" && !e.target.value && index > 0) {
+                        inputs[index - 1].focus();
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>
