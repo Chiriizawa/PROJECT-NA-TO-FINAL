@@ -39,7 +39,7 @@
 <body>
     <div class="verify-container">
         <h2>Please Verify Account</h2>
-        <p>Enter the six-digit code we sent to your email address to verify your new account.</p>
+        <p>Enter the six-digit code we sent to your email address to verify your account.</p>
         <div class="d-flex justify-content-center">
             <input type="text" class="code-input" maxlength="1" oninput="moveToNext(this, 0)" onkeydown="moveToPrev(event, 0)">
             <input type="text" class="code-input" maxlength="1" oninput="moveToNext(this, 1)" onkeydown="moveToPrev(event, 1)">
@@ -48,7 +48,7 @@
             <input type="text" class="code-input" maxlength="1" oninput="moveToNext(this, 4)" onkeydown="moveToPrev(event, 4)">
             <input type="text" class="code-input" maxlength="1" oninput="moveToNext(this, 5)" onkeydown="moveToPrev(event, 5)">
         </div>
-        <button class="btn btn-primary mt-3">Verify & Continue</button>
+        <button type="submit" class="btn btn-primary mt-3">Verify</button>
     </div>
 
     <script>

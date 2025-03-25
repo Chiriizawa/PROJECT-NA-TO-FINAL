@@ -1,5 +1,4 @@
 import base64
-from functools import wraps
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 import mysql.connector
 from flask_bcrypt import Bcrypt
@@ -21,62 +20,9 @@ def connect_db():
 def b64encode_filter(data):
     return base64.b64encode(data).decode('utf-8') if data else ''
 
-# --------- Login Required Decorator ----------
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if "user" not in session:
-            flash("You need to log in first.", "warning")
-            return redirect(url_for("admin.login"))
-        return f(*args, **kwargs)
-    return decorated_function
-
 @admin.route('/')
-@login_required
 def index():
     return render_template("admin_index.html")
-
-@admin.route('/add-admin', methods=['GET'])
-@login_required
-def add_admin_page():
-    return render_template('add_admin.html')
-
-
-@admin.route('/add-admin', methods=['POST'])
-@login_required
-def add_admin():
-    if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        email = request.form.get("email", "").strip()
-        contact = request.form.get("contact", "").strip()
-        address = request.form.get("address", "").strip()
-        password = request.form.get("password", "").strip()
-
-        # ✅ Hash the password before inserting
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-
-        try:
-            conn = connect_db()
-            cursor = conn.cursor()
-
-            # ✅ Insert hashed password into the database
-            cursor.execute(
-                "INSERT INTO admin (name, email, contact, address, password) VALUES (%s, %s, %s, %s, %s)",
-                (name, email, contact, address, hashed_password)
-            )
-
-            conn.commit()
-            cursor.close()
-            conn.close()
-
-            flash("Admin added successfully!", "success")
-            return redirect(url_for("admin.index"))
-
-        except Exception as e:
-            flash(f"Error adding admin: {str(e)}", "danger")
-            return redirect(url_for("admin.index"))
-
-
 
 @admin.route('/login', methods=['GET', 'POST'])
 def login():
@@ -112,7 +58,6 @@ def logout():
     return redirect(url_for("admin.login"))
 
 @admin.route('/Manage-Item', methods=['GET', 'POST'])
-@login_required
 def manageitem():
     if request.method == "POST":
         name = request.form.get('name')
@@ -164,7 +109,6 @@ def manageitem():
     return render_template("manage_item.html", items=processed_items)
 
 @admin.route('/delete/<int:item_id>', methods=['GET'])
-@login_required
 def delete_item(item_id):
     try:
         connection = connect_db()
@@ -179,7 +123,6 @@ def delete_item(item_id):
         return f"Error deleting item: {str(e)}", 500
 
 @admin.route('/edit-item/<int:item_id>', methods=['POST'])
-@login_required
 def edit_item(item_id):
     if request.method == 'POST':
         name = request.form.get('name')
@@ -211,17 +154,14 @@ def edit_item(item_id):
             return f"Error updating item: {str(e)}", 500
 
 @admin.route('/Manage-Orders')
-@login_required
 def manageorders():
     return render_template('manage_order.html')
 
 @admin.route('/Manage-Categories')
-@login_required
 def categories():
     return render_template("categories.html")
 
 @admin.route('/Manage-Users')
-@login_required
 def users():
     connection = connect_db()
     cursor = connection.cursor()
@@ -235,7 +175,6 @@ def users():
     return render_template('manage_users.html', data=data)
 
 @admin.route('/delete_order/<int:order_id>')
-@login_required
 def delete_order(order_id):
     conn = connect_db()
     cursor = conn.cursor()
@@ -246,7 +185,6 @@ def delete_order(order_id):
     return redirect(url_for('admin.manageorders')) 
 
 @admin.route('/delete_user/<int:user_id>', methods=['GET'])
-@login_required
 def delete_user(user_id):
     try:
         connection = connect_db()
@@ -263,7 +201,6 @@ def delete_user(user_id):
 
 
 @admin.route('/Manage-User', methods=['POST'])
-@login_required
 def edit_user():
     user_id = request.form['user_id']
     name = request.form['name']
