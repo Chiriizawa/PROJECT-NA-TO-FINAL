@@ -1,5 +1,16 @@
-// Load cart from localStorage or initialize empty object
-const cart = JSON.parse(localStorage.getItem('cart')) || {};
+// Load cart from localStorage or initialize empty cart
+let cart = loadCartFromLocalStorage() || {};
+
+// Function to load cart from localStorage
+function loadCartFromLocalStorage() {
+    const cartData = localStorage.getItem("cart");
+    return cartData ? JSON.parse(cartData) : {};
+}
+
+// Function to save cart to localStorage
+function saveCartToLocalStorage() {
+    localStorage.setItem("cart", JSON.stringify(cart));
+}
 
 // Function to toggle cart visibility
 function toggleCart() {
@@ -18,12 +29,12 @@ function toggleCart() {
 // Function to add items to cart
 function addToCart(name, price) {
     if (cart[name]) {
-        cart[name].quantity += 1; // Increase quantity with no limit
+        cart[name].quantity += 1; // Increase quantity
     } else {
         cart[name] = { price, quantity: 1 };
     }
 
-    localStorage.setItem('cart', JSON.stringify(cart)); // Save to localStorage
+    saveCartToLocalStorage(); // Save updated cart
     renderCart(); // Update cart display
 }
 
@@ -36,23 +47,30 @@ function removeFromCart(name) {
             delete cart[name];
         }
     }
-    localStorage.setItem('cart', JSON.stringify(cart));
-    renderCart();
+    saveCartToLocalStorage(); // Save updated cart
+    renderCart(); // Update cart display
 }
 
 // Function to update quantity when typed manually
 function updateQuantity(name, newQuantity) {
     let quantity = parseInt(newQuantity);
     if (quantity > 0) {
-        cart[name].quantity = quantity; // No limit on quantity
+        cart[name].quantity = quantity; // Update quantity
     } else {
-        delete cart[name]; // Remove item if quantity is 0 or invalid
+        delete cart[name]; // Remove item if quantity is 0
     }
-    localStorage.setItem('cart', JSON.stringify(cart));
-    renderCart();
+    saveCartToLocalStorage(); // Save updated cart
+    renderCart(); // Update cart display
 }
 
-// Function to render cart (without images)
+// Function to clear the entire cart
+function clearCart() {
+    cart = {}; // Reset cart to empty object
+    saveCartToLocalStorage(); // Save empty cart
+    renderCart(); // Re-render cart
+}
+
+// Function to render cart
 function renderCart() {
     const cartItems = document.getElementById("cart-items");
     cartItems.innerHTML = "";
@@ -71,15 +89,26 @@ function renderCart() {
                     <input type="number" class="form-control text-center mx-1" style="width: 50px;" 
                         value="${item.quantity}" onchange="updateQuantity('${name}', this.value)">
                     <button class="btn btn-sm btn-outline-secondary me-3" onclick="addToCart('${name}', ${item.price})">+</button>
-                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="delete cart['${name}']; renderCart();">×</button>
+                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteItem('${name}')">×</button>
                 </div>
             </div>`;
     }
 
     document.getElementById("total-amount").textContent = `₱${subTotal}.00`;
+
+    if (Object.keys(cart).length === 0) {
+        cartItems.innerHTML = `<p class="text-white">Your cart is empty.</p>`;
+    }
 }
 
-// Function to update checkout form with cart data
+// Function to delete an item from the cart
+function deleteItem(name) {
+    delete cart[name]; // Remove item
+    saveCartToLocalStorage(); // Save updated cart
+    renderCart(); // Re-render cart
+}
+
+// Function to update hidden inputs before submitting
 function updateCartForm() {
     let cartInputs = document.getElementById("cart-inputs");
     cartInputs.innerHTML = "";
@@ -95,12 +124,14 @@ function updateCartForm() {
     }
 }
 
-// Ensure cart data is updated before submitting
+// Clear cart on form submission after checkout
 document.getElementById("checkout-form").addEventListener("submit", function () {
-    updateCartForm();
+    updateCartForm(); // Update hidden inputs
+    clearCart(); // Clear cart after successful checkout
+    localStorage.removeItem("cart"); // Clear localStorage on checkout
 });
 
-// Load cart on page load
+// Load and render cart on page load
 document.addEventListener("DOMContentLoaded", function () {
-    renderCart();
+    renderCart(); // Render cart with loaded data
 });

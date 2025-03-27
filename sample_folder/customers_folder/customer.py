@@ -2,6 +2,7 @@ from flask import Flask, Blueprint, render_template, request, flash, session, re
 import mysql.connector
 import base64
 import re
+import jsonify
 import random
 from flask_mail import Message
 from flask_bcrypt import Bcrypt
@@ -288,26 +289,28 @@ def payment():
 
     # Fetch user details for payment display
     connection = connect_db()
-    cursor = connection.cursor()
+    cursor = connection.cursor(dictionary=True)  # Use dictionary cursor
     cursor.execute("SELECT name, email, contact, address FROM customer WHERE customer_id = %s", (session['user'],))
-    user_details = cursor.fetchone()
+    user = cursor.fetchone()
     connection.close()
 
-    return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user_details=user_details)
-    return render_template('payment.html')
+    return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user)
 
 
-@customer.route('/Account')
+@customer.route('/get_user_details')
 def account():
+    if 'user' not in session:  # Check if the user is logged in
+        return jsonify({"error": "Not logged in"}), 401  # Unauthorized response
+
+    customer_id = session['user']  # Retrieve the logged-in user's ID
 
     connection = connect_db()
-    cursor = connection.cursor()
-
-    cursor.execute('SELECT name, email, contact, address FROM customer')
-    data = cursor.fetchall()
+    cursor = connection.cursor(dictionary=True)  # Use dictionary cursor to return column names
+    cursor.execute('SELECT name, email, contact, address FROM customer WHERE customer_id = %s', (customer_id,))
+    user = cursor.fetchone()  # Fetch the user details
 
     cursor.close()
     connection.close()
 
-    return render_template("account.html", data=data)
+    return render_template('account.html', user=user)
 
