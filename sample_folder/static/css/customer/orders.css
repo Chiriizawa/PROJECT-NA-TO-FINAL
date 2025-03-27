@@ -1,7 +1,5 @@
 /* Cart Item Styles with Background */
 .cart-item {
-    background-image: url("../images/bg1.jpg");
-    background-size: cover;
     background-position: center;
     border-bottom: 1px solid #ddd;
     padding: 10px 15px;
@@ -35,7 +33,7 @@
 
 /* Background Style */
 .bg-container {
-    background: url("../images/bg1.jpg") no-repeat center center;
+    background: url("../../images/bg1.jpg") no-repeat center center;
     background-size: cover;
     padding: 20px;
     min-height: 100vh;
