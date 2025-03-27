@@ -163,16 +163,15 @@ def categories():
 
 @admin.route('/Manage-Users')
 def users():
+
     connection = connect_db()
     cursor = connection.cursor()
-
-    cursor.execute('SELECT customer_id, name, email, contact, address, login_time FROM customer')
-    data = cursor.fetchall()
-
-    cursor.close()
+    cursor.execute("SELECT * FROM payments ORDER BY payment_date DESC")
+    payments = cursor.fetchall()
     connection.close()
 
-    return render_template('manage_users.html', data=data)
+    return render_template('manage_users.html', payments=payments)
+
 
 @admin.route('/delete_order/<int:order_id>')
 def delete_order(order_id):

@@ -1,4 +1,5 @@
-const cart = {};
+// Load cart from localStorage or initialize empty object
+const cart = JSON.parse(localStorage.getItem('cart')) || {};
 
 // Function to toggle cart visibility
 function toggleCart() {
@@ -17,11 +18,13 @@ function toggleCart() {
 // Function to add items to cart
 function addToCart(name, price) {
     if (cart[name]) {
-        cart[name].quantity += 1;
+        cart[name].quantity += 1; // Increase quantity with no limit
     } else {
         cart[name] = { price, quantity: 1 };
     }
-    renderCart();
+
+    localStorage.setItem('cart', JSON.stringify(cart)); // Save to localStorage
+    renderCart(); // Update cart display
 }
 
 // Function to remove items from cart
@@ -33,6 +36,7 @@ function removeFromCart(name) {
             delete cart[name];
         }
     }
+    localStorage.setItem('cart', JSON.stringify(cart));
     renderCart();
 }
 
@@ -40,14 +44,15 @@ function removeFromCart(name) {
 function updateQuantity(name, newQuantity) {
     let quantity = parseInt(newQuantity);
     if (quantity > 0) {
-        cart[name].quantity = quantity;
+        cart[name].quantity = quantity; // No limit on quantity
     } else {
         delete cart[name]; // Remove item if quantity is 0 or invalid
     }
+    localStorage.setItem('cart', JSON.stringify(cart));
     renderCart();
 }
 
-// Function to render cart
+// Function to render cart (without images)
 function renderCart() {
     const cartItems = document.getElementById("cart-items");
     cartItems.innerHTML = "";
@@ -57,9 +62,9 @@ function renderCart() {
         subTotal += item.price * item.quantity;
         cartItems.innerHTML += `
             <div class="cart-item d-flex justify-content-between align-items-center mb-2">
-                <div>
+                <div class="d-flex align-items-center">
                     <span>${name}</span>
-                    <small>₱${item.price * item.quantity}.00</small>
+                    <small class="ms-2">₱${item.price * item.quantity}.00</small>
                 </div>
                 <div class="d-flex align-items-center">
                     <button class="btn btn-sm btn-outline-secondary" onclick="removeFromCart('${name}')">-</button>
@@ -77,7 +82,7 @@ function renderCart() {
 // Function to update checkout form with cart data
 function updateCartForm() {
     let cartInputs = document.getElementById("cart-inputs");
-    cartInputs.innerHTML = "";  
+    cartInputs.innerHTML = "";
 
     let index = 0;
     for (const [name, item] of Object.entries(cart)) {
@@ -93,4 +98,9 @@ function updateCartForm() {
 // Ensure cart data is updated before submitting
 document.getElementById("checkout-form").addEventListener("submit", function () {
     updateCartForm();
+});
+
+// Load cart on page load
+document.addEventListener("DOMContentLoaded", function () {
+    renderCart();
 });

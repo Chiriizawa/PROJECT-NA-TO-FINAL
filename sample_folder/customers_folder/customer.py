@@ -6,8 +6,11 @@ import random
 from flask_mail import Message
 from flask_bcrypt import Bcrypt
 
+
 customer = Blueprint('customer', __name__, template_folder="template") 
+
 bcrypt = Bcrypt()
+
 
 
 db_config = {
@@ -212,6 +215,7 @@ def signup():
 def menu():
     if 'user' not in session:
         return redirect(url_for('customer.login'))
+
     connection = connect_db()
     cursor = connection.cursor()
     cursor.execute("SELECT item_id, item_name, price, image FROM items")
@@ -223,7 +227,7 @@ def menu():
         if isinstance(img, bytes):
             img_base64 = base64.b64encode(img).decode('utf-8')
         else:
-            img_base64 = None 
+            img_base64 = None
 
         formatted_items.append((item_id, name, price, img_base64))
 
@@ -232,27 +236,66 @@ def menu():
 @customer.route('/Orders', methods=['GET', 'POST'])
 def orders():
     if 'user' not in session:
-        return redirect(url_for('customer.login')) 
+        return redirect(url_for('customer.login'))
 
     cart_items = []
-    index = 0
-    while f'item_name_{index}' in request.form:
-        cart_items.append({
-            'name': request.form[f'item_name_{index}'],
-            'price': float(request.form[f'item_price_{index}']),
-            'quantity': int(request.form[f'item_quantity_{index}'])
-        })
-        index += 1
+    item_index = 0
+
+    # Check for submitted cart items in POST
+    if request.method == 'POST':
+        while f'item_name_{item_index}' in request.form:
+            cart_items.append({
+                'item_id': request.form.get(f'item_id_{item_index}', ''),
+                'name': request.form[f'item_name_{item_index}'],
+                'price': float(request.form[f'item_price_{item_index}']),
+                'quantity': int(request.form[f'item_quantity_{item_index}']),
+                'image_url': request.form.get(f'item_image_{item_index}', '')
+            })
+            item_index += 1
+
+        # Save cart in session to retain for payment
+        session['cart_items'] = cart_items
+
+    # If no items in the cart, return to menu
+    if not cart_items and 'cart_items' in session:
+        cart_items = session['cart_items']
 
     total_amount = sum(item['price'] * item['quantity'] for item in cart_items)
-    
+
     connection = connect_db()
     cursor = connection.cursor()
-    cursor.execute("SELECT name, email, contact, address FROM customer")
-    users = cursor.fetchall()
+    cursor.execute("SELECT name, email, contact, address FROM customer WHERE customer_id = %s", (session['user'],))
+    users = cursor.fetchone()
     connection.close()
 
     return render_template('orders.html', cart_items=cart_items, total_amount=total_amount, users=users)
+
+
+@customer.route('/Payment', methods=['GET', 'POST'])
+def payment():
+    if 'user' not in session:
+        return redirect(url_for('customer.login'))
+
+    # Get cart items from session
+    cart_items = session.get('cart_items', [])
+
+    # If no items, redirect to menu
+    if not cart_items:
+        flash("Your cart is empty. Add items first!", "warning")
+        return redirect(url_for('customer.menu'))
+
+    total_amount = sum(item['price'] * item['quantity'] for item in cart_items)
+
+    # Fetch user details for payment display
+    connection = connect_db()
+    cursor = connection.cursor()
+    cursor.execute("SELECT name, email, contact, address FROM customer WHERE customer_id = %s", (session['user'],))
+    user_details = cursor.fetchone()
+    connection.close()
+
+    return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user_details=user_details)
+    return render_template('payment.html')
+
 
 @customer.route('/Account')
 def account():
@@ -267,3 +310,4 @@ def account():
     connection.close()
 
     return render_template("account.html", data=data)
+
