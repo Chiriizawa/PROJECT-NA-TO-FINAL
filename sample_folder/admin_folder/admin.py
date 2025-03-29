@@ -33,13 +33,11 @@ def login():
         conn = connect_db()
         cursor = conn.cursor(dictionary=True)  # Fetch as dictionary to access by column name
 
-        # ✅ Fetch user by email
         cursor.execute("SELECT * FROM admin WHERE email = %s", (email,))
         user = cursor.fetchone()
         cursor.close()
         conn.close()
 
-        # ✅ Check if user exists and verify password using bcrypt
         if user and bcrypt.check_password_hash(user['password'], password):  # Ensure correct column name
             session["user"] = user['email']  # Store session with email
             flash("Login successful!", "success")
@@ -155,7 +153,55 @@ def edit_item(item_id):
 
 @admin.route('/Manage-Orders')
 def manageorders():
-    return render_template('manage_order.html')
+    connection = connect_db()
+    cursor = connection.cursor(dictionary=True)
+
+    query = """
+        SELECT 
+            o.order_id,
+            c.name AS customer_name,
+            o.total_amount,
+            o.order_date,
+            p.payment_status AS status,
+            i.item_name,
+            o.quantity
+        FROM orders o
+        LEFT JOIN customer c ON o.customer_id = c.customer_id
+        LEFT JOIN items i ON o.item_id = i.item_id
+        LEFT JOIN payments p ON o.order_id = p.order_id
+        ORDER BY o.order_date DESC;
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+
+    print("Query Result:", result)  # Debugging: Check what we got from the DB
+
+    # Ensure orders is initialized as a dictionary
+    orders = {}
+
+    for row in result:
+        order_id = row['order_id']
+        if order_id not in orders:
+            orders[order_id] = {
+                "order_id": order_id,
+                "name": row["customer_name"],
+                "total_amount": row["total_amount"],
+                "order_date": row["order_date"],
+                "status": row["status"],
+                "items": []
+            }
+        if row["item_name"]:  
+            orders[order_id]["items"].append({"name": row["item_name"], "quantity": row["quantity"]})
+
+    connection.close()
+
+    # Debugging: Check if orders is a dictionary
+    print("Orders Dictionary:", orders, type(orders))
+
+    # Ensure orders is correctly passed to template
+    return render_template("manage_order.html", orders=list(orders.values()))
+
+
 
 @admin.route('/Manage-Categories')
 def categories():

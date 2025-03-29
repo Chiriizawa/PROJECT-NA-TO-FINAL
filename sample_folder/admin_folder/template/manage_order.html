@@ -6,28 +6,25 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Order ID</th>
-            <th>Item</th>
-            <th>Quantity</th>
-            <th>Price</th>
+            <th>Name</th>
+            <th>Items</th>
+            <th>Total Amount</th>
             <th>Order Date</th>
             <th>Status</th>
-            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         {% for order in orders %}
         <tr>
-            <td>{{ order.order_id }}</td>
-            <td>{{ order.item_name }}</td>
-            <td>{{order.quantity}}</td>
-            <td>₱{{ order.price }}</td>
+            <td>{{ order.name }}</td>
+            <td>
+                {% for item in orders.items %} 
+                    {{ item.name }} (x{{ item.quantity }})<br>
+                {% endfor %}
+            </td>            
+            <td>₱{{ order.total_amount }}</td>
             <td>{{ order.order_date }}</td>
             <td>{{ order.status }}</td>
-            <td>
-                <a href="{{ url_for('admin.accept_order', order_id=order.order_id) }}" class="btn btn-success">Accept</a>
-                <a href="{{ url_for('admin.delete_order', order_id=order.order_id) }}" class="btn btn-danger">Delete</a>
-            </td>
         </tr>
         {% endfor %}
     </tbody>

@@ -2,7 +2,6 @@ from flask import Flask, Blueprint, render_template, request, flash, session, re
 import mysql.connector
 import base64
 import re
-import jsonify
 import random
 from flask_mail import Message
 from flask_bcrypt import Bcrypt
@@ -271,46 +270,40 @@ def orders():
 
     return render_template('orders.html', cart_items=cart_items, total_amount=total_amount, users=users)
 
-
 @customer.route('/Payment', methods=['GET', 'POST'])
 def payment():
     if 'user' not in session:
         return redirect(url_for('customer.login'))
 
-    # Get cart items from session
     cart_items = session.get('cart_items', [])
 
-    # If no items, redirect to menu
     if not cart_items:
         flash("Your cart is empty. Add items first!", "warning")
         return redirect(url_for('customer.menu'))
 
     total_amount = sum(item['price'] * item['quantity'] for item in cart_items)
 
-    # Fetch user details for payment display
     connection = connect_db()
-    cursor = connection.cursor(dictionary=True)  # Use dictionary cursor
-    cursor.execute("SELECT name, email, contact, address FROM customer WHERE customer_id = %s", (session['user'],))
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("SELECT customer_id, name, email, contact, address FROM customer ORDER BY customer_id DESC LIMIT 1")
     user = cursor.fetchone()
-    connection.close()
 
+    connection.commit()
+    connection.close()
     return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user)
 
 
-@customer.route('/get_user_details')
+@customer.route('/Account')
 def account():
-    if 'user' not in session:  # Check if the user is logged in
-        return jsonify({"error": "Not logged in"}), 401  # Unauthorized response
-
-    customer_id = session['user']  # Retrieve the logged-in user's ID
-
     connection = connect_db()
-    cursor = connection.cursor(dictionary=True)  # Use dictionary cursor to return column names
-    cursor.execute('SELECT name, email, contact, address FROM customer WHERE customer_id = %s', (customer_id,))
-    user = cursor.fetchone()  # Fetch the user details
+    cursor = connection.cursor()
+
+    cursor.execute('SELECT name, email, contact, address FROM customer ORDER BY customer_id DESC LIMIT 1')
+    data = cursor.fetchall()
 
     cursor.close()
     connection.close()
 
-    return render_template('account.html', user=user)
+    return render_template("account.html", data=data)
+
 
