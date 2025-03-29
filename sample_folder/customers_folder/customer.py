@@ -15,7 +15,7 @@ bcrypt = Bcrypt()
 
 db_config = {
     'host':'localhost',
-    'database':'craveon',
+    'database':'foodordering',
     'user':'root',
     'password':'',
 }

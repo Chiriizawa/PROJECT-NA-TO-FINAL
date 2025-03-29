@@ -18,7 +18,7 @@
         <tr>
             <td>{{ order.name }}</td>
             <td>
-                {% for item in orders.items %} 
+                {% for item in order.items %} 
                     {{ item.name }} (x{{ item.quantity }})<br>
                 {% endfor %}
             </td>            

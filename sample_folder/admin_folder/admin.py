@@ -8,7 +8,7 @@ bcrypt = Bcrypt()
 
 db_config = {   
     'host': 'localhost',
-    'database': 'craveon',
+    'database': 'foodordering',
     'user': 'root',
     'password': '',
 }   
@@ -174,8 +174,6 @@ def manageorders():
     cursor.execute(query)
     result = cursor.fetchall()
 
-    print("Query Result:", result)  # Debugging: Check what we got from the DB
-
     # Ensure orders is initialized as a dictionary
     orders = {}
 
@@ -195,8 +193,6 @@ def manageorders():
 
     connection.close()
 
-    # Debugging: Check if orders is a dictionary
-    print("Orders Dictionary:", orders, type(orders))
 
     # Ensure orders is correctly passed to template
     return render_template("manage_order.html", orders=list(orders.values()))
