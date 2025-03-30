@@ -52,37 +52,52 @@ def index():
 
 @customer.route('/login', methods=['GET', 'POST'])
 def login():
+    email_error = None
+    password_error = None
+
     if request.method == "POST":
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "").strip()
+
+        if not email:
+            email_error = "Email is required."
         
-        conn = connect_db()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM customer WHERE email = %s", (email,))
-        user = cursor.fetchone()
-        cursor.close()
-        conn.close()
+        elif not password:
+            password_error = "Password is required."
 
-        if user and bcrypt.check_password_hash(user[5], password):
-            session["temp_user"] = user[1]  
-            session["verification_code"] = str(random.randint(100000, 999999)) 
+        else:
+            conn = connect_db()
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM customer WHERE email = %s", (email,))
+            user = cursor.fetchone()
+            cursor.close()
+            conn.close()
 
-            # Send email
-            mail = current_app.extensions.get('mail')
-            if mail:
-                message = Message(
-                    subject="Your Verification Code",
-                    recipients=[email],  # Send to the user's email
-                    sender=current_app.config['MAIL_USERNAME'],
-                    body=f"Your verification code is {session['verification_code']}"
-                )
-                mail.send(message)
-            
-            return redirect(url_for("customer.verify"))
+            # Check if user exists
+            if not user:
+                email_error = "Email not found. Please check your email."
+            elif not bcrypt.check_password_hash(user[5], password):
+                password_error = "Incorrect password. Please try again."
+            else:
+                session["temp_user"] = user[1]
+                session["verification_code"] = str(random.randint(100000, 999999))
 
-        flash("Invalid credentials.", "danger")
+                # Send email
+                mail = current_app.extensions.get('mail')
+                if mail:
+                    message = Message(
+                        subject="Your Verification Code",
+                        recipients=[email],
+                        sender=current_app.config['MAIL_USERNAME'],
+                        body=f"Your verification code is {session['verification_code']}"
+                    )
+                    mail.send(message)
+                
+                return redirect(url_for("customer.verify"))
 
-    return render_template("customerlogin.html")
+    return render_template("customerlogin.html", email_error=email_error, password_error=password_error)
+
+
 
 def send_verification_email(email, code):
     try:
@@ -129,7 +144,6 @@ def logout():
 @customer.route('/SignUp', methods=['GET', 'POST'])
 def signup():
     errors = {}
-    success = False  # Add success flag
 
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
@@ -210,11 +224,10 @@ def signup():
         cursor.close()
         conn.close()
 
-        success = True 
 
-        return render_template("customersignup.html", errors={}, success=success)
+        return render_template("customersignup.html", errors={})
 
-    return render_template("customersignup.html", errors={}, success=False)
+    return render_template("customersignup.html", errors={})
 
 
 @customer.route('/Menu')

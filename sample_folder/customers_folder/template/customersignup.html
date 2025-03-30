@@ -7,6 +7,8 @@
     <title>Crave On - Sign Up</title>
     <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
     <link rel="stylesheet" href="{{url_for('static', filename='css/customer/customer_signup.css')}}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
 </head>
 
 <body>
@@ -66,26 +68,39 @@
                 <!-- Password Input -->
                 <div class="mb-3">
                     <label for="password" class="form-label text-white">Password</label>
-                    <input type="password" class="form-control {% if errors.get('password') %}is-invalid{% endif %}" id="password"
-                        name="password" placeholder="Enter your password"  >
-                    {% if errors.get('password') %}
-                    <div class="invalid-feedback d-block">
-                        {{ errors['password'] }}
+                    <div class="position-relative">
+                        <input type="password" class="form-control {% if errors.get('password') %}is-invalid{% endif %}" id="password"
+                            name="password" placeholder="Enter your password" style="padding-right: 40px;">
+                        <i id="togglePasswordIcon" class="fa fa-eye-slash position-absolute" onclick="togglePassword('password', 'togglePasswordIcon')"
+                            style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+                        {% if errors.get('password') %}
+                        <div class="invalid-feedback d-block">
+                            {{ errors['password'] }}
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
                 </div>
-            
-                <!-- Confirm Password Input -->
-                <div class="mb-3">
-                    <label for="confirm-password" class="form-label text-white">Confirm Password</label>
-                    <input type="password" class="form-control {% if errors.get('confirm_password') %}is-invalid{% endif %}"
-                        id="confirm-password" name="confirm-password" placeholder="Confirm your password"  >
-                    {% if errors.get('confirm_password') %}
-                    <div class="invalid-feedback d-block">
-                        {{ errors['confirm_password'] }}
+                
+
+                    <!-- Confirm Password Input -->
+                    <div class="mb-3">
+                        <label for="confirm-password" class="form-label text-white">Confirm Password</label>
+                        <div class="position-relative">
+                            <input type="password" class="form-control {% if errors.get('confirm_password') %}is-invalid{% endif %}"
+                                id="confirm-password" name="confirm-password" placeholder="Confirm your password"
+                                style="padding-right: 40px;">
+                            <i id="toggleConfirmPasswordIcon" class="fa fa-eye-slash position-absolute"
+                                onclick="togglePassword('confirm-password', 'toggleConfirmPasswordIcon')"
+                                style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+                            {% if errors.get('confirm_password') %}
+                            <div class="invalid-feedback d-block">
+                                {{ errors['confirm_password'] }}
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
-                    {% endif %}
-                </div>
+                    
+
             
                 <button type="submit" class="btn btn-success w-100 mb-3">Sign Up</button>
             
@@ -97,6 +112,23 @@
     </div>
 
 
+    <script>
+        function togglePassword(fieldId, iconId) {
+            const field = document.getElementById(fieldId);
+            const icon = document.getElementById(iconId);
+            if (field.type === "password") {
+                field.type = "text";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            } else {
+                field.type = "password";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            }
+        }
+
+    </script>
+    
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
