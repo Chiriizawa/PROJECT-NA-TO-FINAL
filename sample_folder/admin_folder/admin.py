@@ -22,7 +22,25 @@ def b64encode_filter(data):
 
 @admin.route('/')
 def index():
-    return render_template("admin_index.html")
+    connection = connect_db()
+    cursor = connection.cursor()
+
+    # Fetch total sales from orders
+    cursor.execute("SELECT SUM(total_price) FROM orders")
+    total_sales = cursor.fetchone()[0] or 0  # If NULL, set to 0
+
+    # Fetch total number of customers
+    cursor.execute("SELECT COUNT(*) FROM customer")
+    total_customers = cursor.fetchone()[0]
+
+
+    connection.close()
+
+    return render_template(
+        'admin_index.html',
+        total_sales=total_sales,
+        total_customers=total_customers,
+    )
 
 @admin.route('/login', methods=['GET', 'POST'])
 def login():
@@ -151,6 +169,8 @@ def edit_item(item_id):
         except Exception as e:
             return f"Error updating item: {str(e)}", 500
 
+
+
 @admin.route('/Manage-Orders')
 def manageorders():
     connection = connect_db()
@@ -158,44 +178,45 @@ def manageorders():
 
     query = """
         SELECT 
-            o.order_id,
-            c.name AS customer_name,
-            o.total_amount,
-            o.order_date,
-            p.payment_status AS status,
-            i.item_name,
-            o.quantity
+        o.order_id,
+        c.name AS customer_name,
+        o.total_amount,
+        o.order_date,
+        o.order_status AS status,  
+        i.item_name,
+        o.quantity 
         FROM orders o
         LEFT JOIN customer c ON o.customer_id = c.customer_id
         LEFT JOIN items i ON o.item_id = i.item_id
-        LEFT JOIN payments p ON o.order_id = p.order_id
         ORDER BY o.order_date DESC;
     """
     cursor.execute(query)
     result = cursor.fetchall()
 
-    # Ensure orders is initialized as a dictionary
     orders = {}
 
-    for row in result:
-        order_id = row['order_id']
-        if order_id not in orders:
-            orders[order_id] = {
-                "order_id": order_id,
-                "name": row["customer_name"],
-                "total_amount": row["total_amount"],
-                "order_date": row["order_date"],
-                "status": row["status"],
-                "items": []
-            }
-        if row["item_name"]:  
-            orders[order_id]["items"].append({"name": row["item_name"], "quantity": row["quantity"]})
+    if result:  
+        for row in result:
+            order_id = row['order_id']
+            if order_id not in orders:
+                orders[order_id] = {
+                    "order_id": order_id,
+                    "name": row["customer_name"],
+                    "total_amount": row["total_amount"],
+                    "order_date": row["order_date"],
+                    "status": row["status"],
+                    "items": []
+                }
+            if row["item_name"]:
+                orders[order_id]["items"].append({"name": row["item_name"], "quantity": row["quantity"]})
 
     connection.close()
 
+    # Convert dictionary values to list
+    orders_list = list(orders.values()) if orders else []
 
-    # Ensure orders is correctly passed to template
-    return render_template("manage_order.html", orders=list(orders.values()))
+
+    return render_template("manage_order.html", orders=orders_list)
 
 
 
@@ -208,7 +229,7 @@ def users():
 
     connection = connect_db()
     cursor = connection.cursor()
-    cursor.execute("SELECT * FROM payments ORDER BY payment_date DESC")
+    cursor.execute("SELECT * FROM customer ORDER BY customer_id DESC")
     payments = cursor.fetchall()
     connection.close()
 
@@ -253,19 +274,8 @@ def edit_user():
         conn = connect_db()
         cursor = conn.cursor()
 
-        # ✅ Corrected table name and query
         sql = "UPDATE customer SET name=%s, email=%s, contact=%s, address=%s WHERE customer_id=%s"
-        values = (name, email, contact, address, user_id)
-
-        cursor.execute(sql, values)
-        conn.commit()
-        
-        cursor.close()
-        conn.close()
-
-        flash('User updated successfully!', 'success')
     except Exception as e:
         flash(f"Error updating user: {str(e)}", 'danger')
 
-    # ✅ Redirecting back to user management page
     return redirect(url_for('admin.users'))

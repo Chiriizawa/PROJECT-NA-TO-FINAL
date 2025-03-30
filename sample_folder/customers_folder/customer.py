@@ -129,6 +129,7 @@ def logout():
 @customer.route('/SignUp', methods=['GET', 'POST'])
 def signup():
     errors = {}
+    success = False  # Add success flag
 
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
@@ -141,6 +142,10 @@ def signup():
         # Validate name
         if not name:
             errors['name'] = "Name is required."
+        elif not name.isalpha():
+            errors['name'] = "Name must contain only letters."
+        elif len(name) < 4:
+            errors['name'] = "Name must be 4 or more characters."
 
         # Validate email
         if not email:
@@ -149,6 +154,16 @@ def signup():
             email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
             if not re.match(email_pattern, email):
                 errors['email'] = "Invalid email format."
+            else:
+                conn = connect_db()
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM customer WHERE email = %s", (email,))
+                existing_email = cursor.fetchone()
+                cursor.close()
+                conn.close()
+
+            if existing_email:
+                errors['email'] = "Email already registered. Please use a different one."
 
         # Validate contact
         if not contact:
@@ -166,7 +181,6 @@ def signup():
             if existing_contact:
                 errors['contact'] = "Contact number already registered. Please use a different one."
 
-
         # Validate address
         if not address:
             errors['address'] = "Address is required."
@@ -178,38 +192,30 @@ def signup():
             errors['password'] = "Password must be at least 8 characters."
 
         # Validate confirm password
-        if not confirm_password:
-            errors['confirm_password'] = "Confirm password is required."
-        elif password != confirm_password:
+        if password != confirm_password:
             errors['confirm_password'] = "Passwords do not match."
-
-        # Check if email already exists
-        if not errors.get('email'):
-            conn = connect_db()
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM customer WHERE email = %s", (email,))
-            existing_user = cursor.fetchone()
-            cursor.close()
-            conn.close()
-
-            if existing_user:
-                errors['email'] = "Email already registered. Please log in."
 
         if errors:
             return render_template("customersignup.html", errors=errors)
 
+        # Insert new customer into database
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         conn = connect_db()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO customer (name, email, contact, address, password) VALUES (%s, %s, %s, %s, %s)",(name, email, contact, address, hashed_password))
+        cursor.execute(
+            "INSERT INTO customer (name, email, contact, address, password) VALUES (%s, %s, %s, %s, %s)",
+            (name, email, contact, address, hashed_password)
+        )
         conn.commit()
         cursor.close()
         conn.close()
 
-        flash("Sign-up successful! Please log in.", "success")
-        return redirect(url_for('customer.login'))
+        success = True 
 
-    return render_template("customersignup.html", errors={})
+        return render_template("customersignup.html", errors={}, success=success)
+
+    return render_template("customersignup.html", errors={}, success=False)
+
 
 @customer.route('/Menu')
 def menu():
