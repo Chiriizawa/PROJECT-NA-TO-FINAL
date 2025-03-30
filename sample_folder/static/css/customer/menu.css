@@ -52,20 +52,23 @@
     overflow-y: auto;
 }
 
-/* Fixed Cart Styling */
 .cart-container {
     position: fixed;
     bottom: 20px;
-    right: 20px;
-    width: 300px;
-    max-height: 400px;
+    left: 88%; /* Centering horizontally */
+    transform: translateX(-50%);
+    width: 400px; /* Adjust the width */
+    max-height: 1000px; /* Increase the max height */
     overflow-y: auto;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     border-radius: 10px;
     background: white;
     z-index: 1000;
     transition: all 0.3s ease-in-out;
+    padding: 20px; /* More padding inside */
 }
+
+
 
 /* Center Content and Limit Width */
 .menu-container {
@@ -93,6 +96,10 @@
 /* Optional: Add smooth transition when minimizing */
 #cart-content {
     transition: max-height 0.3s ease-in-out;
+    width: 550px; /* Adjust this value as needed */
+    max-width: 100%;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    
 }
 
 /* 🎯 Remove spinner/arrows from number inputs */

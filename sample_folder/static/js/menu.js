@@ -135,3 +135,4 @@ document.getElementById("checkout-form").addEventListener("submit", function () 
 document.addEventListener("DOMContentLoaded", function () {
     renderCart(); // Render cart with loaded data
 });
+

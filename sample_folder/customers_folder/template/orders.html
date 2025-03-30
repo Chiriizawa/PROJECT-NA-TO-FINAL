@@ -114,9 +114,6 @@
                             {% endif %}
                             <p>{{ item.name }} - {{ item.quantity }} x ₱{{ item.price }}.00</p>
                         </div>
-                        <button type="button" class="btn-remove" onclick="removeItem('{{ item.item_id }}')">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
                     </div>
                     {% endfor %}
 
@@ -156,5 +153,8 @@
 
         document.querySelector('.total-amount').textContent = `Total Amount: ₱${totalAmount.toFixed(2)}`;
     }
+
 </script>
+
+
 {% endblock %}
