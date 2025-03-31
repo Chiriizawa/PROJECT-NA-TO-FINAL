@@ -5,6 +5,15 @@
     box-sizing: border-box;
 }
 
+/* Prevent horizontal scroll */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden; /* Prevents unwanted horizontal scroll */
+}
+
 /* General Style for Full-Height Sections */
 .section {
     height: 100vh; /* Full viewport height */
@@ -15,6 +24,7 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    overflow: hidden; /* Ensure no overflow */
 }
 
 /* Section 1 - Background */
@@ -35,11 +45,34 @@
     background-size: cover;
 }
 
-/* Hero Section Content */
+/* Hero Section Content - Centered but moved further downward */
 .hero-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;   /* Align content towards the top */
+    align-items: center;           /* Center horizontally */
+    height: 100%;
     text-align: center;
     color: white;
     padding: 20px;
+    margin-top: 15vh;              /* Moves content further downward */
+}
+
+/* Larger font size for "Crave On" */
+.hero-content h1 {
+    font-size: 6rem;               /* Larger size for the main title */
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 1.5rem;         /* More spacing below the title */
+}
+
+/* Styling for the tagline */
+.hero-content p {
+    font-size: 2rem;               /* Slightly larger text */
+    margin-top: 1rem;              /* Adds spacing between title and tagline */
+    margin-bottom: 3rem;           /* Adds more spacing below the tagline */
+    line-height: 1.5;              /* Improve readability */
+    max-width: 70%;                /* Keep it from stretching too wide */
 }
 
 /* Button Styling */
@@ -86,6 +119,24 @@
     padding: 20px;
     width: 100%;
 }
+
+/* Hero Section Full Screen Background */
+.hero-section {
+    height: 100vh; /* Fullscreen background */
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden; /* Prevent horizontal scroll */
+}
+
+/* Add Full-Height Section Style to Hero Section */
+.hero-section {
+    background: url("../../images/hero-bg.jpg") no-repeat center center;
+    background-size: cover;
+}
+
+/* Logo Animation */
 .logo-container {
     display: inline-block;
     animation: bounce 1.5s infinite ease-in-out;

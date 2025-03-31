@@ -1,3 +1,4 @@
+/* General body styling */
 body {
     display: flex;
     justify-content: center;
@@ -7,6 +8,8 @@ body {
     background: url("../../images/bg.jpg") no-repeat center center fixed;
     background-size: cover;
 }
+
+/* Login card styling */
 .login-card {
     background: white;
     padding: 2rem;
@@ -15,7 +18,31 @@ body {
     width: 100%;
     max-width: 400px;
 }
+
+/* Button styling */
 .btn-success {
     background-color: #28a745;
     border: none;
+}
+
+/* Password field container */
+.position-relative {
+    position: relative;
+}
+
+/* Styling for the eye icon */
+#togglePassword {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #28a745; /* Green by default */
+    font-size: 18px;
+    transition: color 0.3s;
+}
+
+/* Hover effect */
+#togglePassword:hover {
+    color: #555; /* Grey on hover */
 }

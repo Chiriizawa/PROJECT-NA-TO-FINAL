@@ -1,50 +1,58 @@
-*{
+* {
     margin: 0;
 }
 
-
-.logo{
+/* Logo styling */
+.logo {
     margin-left: 19px;
 }
 
-
-
-
+/* Navigation link styling */
 .nav-link {
-    font-size: 1.3rem; }
-
-
-.nav-link-underline {
+    font-size: 1.3rem;
     position: relative;
-    overflow: hidden;
     transition: color 0.3s ease;
 }
 
+/* Underline effect on hover */
 .nav-link-underline::after {
     content: "";
     position: absolute;
     width: 0;
     height: 2px;
-    background-color: #000; 
-    bottom: 0;
-    left: 50%; 
-    transition: width 0.3s ease, left 0.3s ease; 
+    background-color: #000; /* Black underline */
+    bottom: -5px; /* Moves underline below the text */
+    left: 50%;
+    transition: width 0.3s ease, left 0.3s ease;
 }
 
 .nav-link-underline:hover::after {
-    width: 100%;        
-    left: 0;         
-
+    width: 100%;
+    left: 0;
 }
 
+/* Active link styling - bold with black underline */
+.nav-link.active {
+    font-weight: bold;
+    color: #000; /* Text color */
+}
+
+.nav-link.active::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background-color: #000; /* Black underline */
+    bottom: -5px; /* Positioned below the text */
+    left: 0;
+}
+
+/* Instagram icon spacing */
 .instagram-icon {
-    margin-left: 15px; 
+    margin-left: 15px;
 }
 
-#sidebar {
-    z-index: 9999;
-}
-
+/* Profile dropdown menu */
 .profile-dropdown {
     display: none;
     position: absolute;
@@ -58,12 +66,14 @@
     z-index: 1000;
     width: 150px;
 }
+
 .profile-dropdown a {
     display: block;
     padding: 8px 10px;
     text-decoration: none;
     color: black;
 }
+
 .profile-dropdown a:hover {
     background-color: #f0f0f0;
 }

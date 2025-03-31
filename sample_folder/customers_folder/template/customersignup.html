@@ -9,126 +9,151 @@
     <link rel="stylesheet" href="{{url_for('static', filename='css/customer/customer_signup.css')}}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
+    <style>
+        /* Consistent container styling */
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Style for password input */
+        .password-container input {
+            flex: 1;
+            padding-right: 45px;  /* Space for the icon */
+        }
+
+        /* Icon positioning */
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #28a745;  /* Green color */
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        /* Icon hover effect */
+        .toggle-password:hover {
+            color: #555;  /* Grey on hover */
+        }
+    </style>
 </head>
 
 <body>
     <div class="container d-flex justify-content-center align-items-center vh-100">
         <div class="login-card">
             <h3 class="text-center text-white">Sign Up</h3>
+            
             <form method="POST" action="{{ url_for('customer.signup') }}">
+
                 <!-- Name Input -->
                 <div class="mb-3">
                     <label for="name" class="form-label text-white">Name</label>
-                    <input type="text" class="form-control {% if errors.get('name') %}is-invalid{% endif %}" id="name" name="name"
-                        placeholder="Enter your name" value="{{ request.form.get('name', '') }}">
+                    <input type="text" class="form-control {% if errors.get('name') %}is-invalid{% endif %}" 
+                        id="name" name="name" placeholder="Enter your name" 
+                        value="{{ request.form.get('name', '') }}">
                     {% if errors.get('name') %}
                     <div class="invalid-feedback d-block">
                         {{ errors['name'] }}
                     </div>
                     {% endif %}
                 </div>
-            
+
                 <!-- Email Input -->
                 <div class="mb-3">
                     <label for="email" class="form-label text-white">Email</label>
-                    <input type="email" class="form-control {% if errors.get('email') %}is-invalid{% endif %}" id="email"
-                        name="email" placeholder="Enter your email" value="{{ request.form.get('email', '') }}"  >
+                    <input type="email" class="form-control {% if errors.get('email') %}is-invalid{% endif %}" 
+                        id="email" name="email" placeholder="Enter your email" 
+                        value="{{ request.form.get('email', '') }}">
                     {% if errors.get('email') %}
                     <div class="invalid-feedback d-block">
                         {{ errors['email'] }}
                     </div>
                     {% endif %}
                 </div>
-            
+
                 <!-- Contact Input -->
                 <div class="mb-3">
                     <label for="contact" class="form-label text-white">Contact Number</label>
-                    <input type="text" class="form-control {% if errors.get('contact') %}is-invalid{% endif %}" id="contact"
-                        name="contact" placeholder="Enter your contact number" value="{{ request.form.get('contact', '') }}"
-                         >
+                    <input type="text" class="form-control {% if errors.get('contact') %}is-invalid{% endif %}" 
+                        id="contact" name="contact" placeholder="Enter your contact number" 
+                        value="{{ request.form.get('contact', '') }}">
                     {% if errors.get('contact') %}
                     <div class="invalid-feedback d-block">
                         {{ errors['contact'] }}
                     </div>
                     {% endif %}
                 </div>
-            
+
                 <!-- Address Input -->
                 <div class="mb-3">
                     <label for="address" class="form-label text-white">Address</label>
-                    <input type="text" class="form-control {% if errors.get('address') %}is-invalid{% endif %}" id="address"
-                        name="address" placeholder="Enter your address" value="{{ request.form.get('address', '') }}"  >
+                    <input type="text" class="form-control {% if errors.get('address') %}is-invalid{% endif %}" 
+                        id="address" name="address" placeholder="Enter your address" 
+                        value="{{ request.form.get('address', '') }}">
                     {% if errors.get('address') %}
                     <div class="invalid-feedback d-block">
                         {{ errors['address'] }}
                     </div>
                     {% endif %}
                 </div>
-            
-                <!-- Password Input -->
+
+                <!-- Password Input with Icon -->
                 <div class="mb-3">
                     <label for="password" class="form-label text-white">Password</label>
-                    <div class="position-relative">
-                        <input type="password" class="form-control {% if errors.get('password') %}is-invalid{% endif %}" id="password"
-                            name="password" placeholder="Enter your password" style="padding-right: 40px;">
-                        <i id="togglePasswordIcon" class="fa fa-eye-slash position-absolute" onclick="togglePassword('password', 'togglePasswordIcon')"
-                            style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
-                        {% if errors.get('password') %}
-                        <div class="invalid-feedback d-block">
-                            {{ errors['password'] }}
-                        </div>
-                        {% endif %}
+                    <div class="password-container">
+                        <input type="password" class="form-control {% if errors.get('password') %}is-invalid{% endif %}" 
+                            id="password" name="password" placeholder="Enter your password">
+                        <i class="fas fa-eye-slash toggle-password" onclick="togglePassword('password', this)"></i>
                     </div>
+                    {% if errors.get('password') %}
+                    <div class="invalid-feedback d-block">
+                        {{ errors['password'] }}
+                    </div>
+                    {% endif %}
                 </div>
-                
 
-                    <!-- Confirm Password Input -->
-                    <div class="mb-3">
-                        <label for="confirm-password" class="form-label text-white">Confirm Password</label>
-                        <div class="position-relative">
-                            <input type="password" class="form-control {% if errors.get('confirm_password') %}is-invalid{% endif %}"
-                                id="confirm-password" name="confirm-password" placeholder="Confirm your password"
-                                style="padding-right: 40px;">
-                            <i id="toggleConfirmPasswordIcon" class="fa fa-eye-slash position-absolute"
-                                onclick="togglePassword('confirm-password', 'toggleConfirmPasswordIcon')"
-                                style="right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
-                            {% if errors.get('confirm_password') %}
-                            <div class="invalid-feedback d-block">
-                                {{ errors['confirm_password'] }}
-                            </div>
-                            {% endif %}
-                        </div>
+                <!-- Confirm Password Input with Icon -->
+                <div class="mb-3">
+                    <label for="confirm-password" class="form-label text-white">Confirm Password</label>
+                    <div class="password-container">
+                        <input type="password" class="form-control {% if errors.get('confirm_password') %}is-invalid{% endif %}" 
+                            id="confirm-password" name="confirm-password" placeholder="Confirm your password">
+                        <i class="fas fa-eye-slash toggle-password" onclick="togglePassword('confirm-password', this)"></i>
                     </div>
-                    
+                    {% if errors.get('confirm_password') %}
+                    <div class="invalid-feedback d-block">
+                        {{ errors['confirm_password'] }}
+                    </div>
+                    {% endif %}
+                </div>
 
-            
                 <button type="submit" class="btn btn-success w-100 mb-3">Sign Up</button>
-            
+
                 <div class="text-center text-white">
-                    <span>Already have an account? <a href="{{ url_for('customer.login') }}" class="text-decoration-none text-primary">Log In</a></span>
+                    <span>Already have an account? 
+                        <a href="{{ url_for('customer.login') }}" class="text-decoration-none text-primary">Log In</a>
+                    </span>
                 </div>
             </form>            
         </div>
     </div>
 
-
     <script>
-        function togglePassword(fieldId, iconId) {
-            const field = document.getElementById(fieldId);
-            const icon = document.getElementById(iconId);
-            if (field.type === "password") {
-                field.type = "text";
-                icon.classList.remove("fa-eye-slash");
-                icon.classList.add("fa-eye");
-            } else {
-                field.type = "password";
-                icon.classList.remove("fa-eye");
-                icon.classList.add("fa-eye-slash");
-            }
-        }
+        // Function to toggle password visibility
+        function togglePassword(fieldId, icon) {
+            const passwordInput = document.getElementById(fieldId);
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
 
+            // Toggle icon classes
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        }
     </script>
-    
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>

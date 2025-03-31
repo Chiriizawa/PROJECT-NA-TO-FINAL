@@ -229,11 +229,11 @@ def users():
 
     connection = connect_db()
     cursor = connection.cursor()
-    cursor.execute("SELECT * FROM customer ORDER BY customer_id DESC")
-    payments = cursor.fetchall()
+    cursor.execute("SELECT * FROM customer")
+    users = cursor.fetchall()
     connection.close()
 
-    return render_template('manage_users.html', payments=payments)
+    return render_template('manage_users.html', users=users)
 
 
 @admin.route('/delete_order/<int:order_id>')

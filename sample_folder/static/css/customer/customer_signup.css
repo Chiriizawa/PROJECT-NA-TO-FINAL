@@ -1,8 +1,10 @@
-body{
+/* Background styling */
+body {
     background: url("../../images/bg.jpg") no-repeat center center fixed;
     background-size: cover;
 }
 
+/* Font and color styling */
 .requirement {
     font-size: 0.9rem;
 }
@@ -10,9 +12,10 @@ body{
     color: #e74c3c;
 }
 .text-green {
-    color: #27ae60;
+    color: #131313;
 }
 
+/* Sign-up card styling */
 .login-card {
     margin-top: 3em;
     width: 22rem;
@@ -24,3 +27,29 @@ body{
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Password container styling */
+.password-container {
+    position: relative;
+}
+
+/* Eye icon styling with black color */
+.toggle-password {
+    position: absolute;
+    right: 10px;  /* Align to the right */
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #000000 !important;   /* Black color */
+    font-size: 18px;
+    transition: color 0.3s;
+}
+
+/* Hover effect */
+.toggle-password:hover {
+    color: #555;   /* Grey on hover */
+}
+
+/* Adjust padding to avoid overlap with the eye icon */
+.password-container input {
+    padding-right: 40px;
+}
