@@ -1,17 +1,17 @@
 import base64
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 import mysql.connector
 from flask_bcrypt import Bcrypt
 
 admin = Blueprint('admin', __name__, template_folder="template")
 bcrypt = Bcrypt()
 
-db_config = {   
+db_config = {
     'host': 'localhost',
-    'database': 'foodordering',
+    'database': 'onlinefood',
     'user': 'root',
     'password': '',
-}   
+}
 
 def connect_db():
     return mysql.connector.connect(**db_config)
@@ -26,13 +26,12 @@ def index():
     cursor = connection.cursor()
 
     # Fetch total sales from orders
-    cursor.execute("SELECT SUM(total_price) FROM orders")
+    cursor.execute("SELECT SUM(total_amount) FROM orders")
     total_sales = cursor.fetchone()[0] or 0  # If NULL, set to 0
 
     # Fetch total number of customers
     cursor.execute("SELECT COUNT(*) FROM customer")
     total_customers = cursor.fetchone()[0]
-
 
     connection.close()
 
@@ -49,15 +48,15 @@ def login():
         password = request.form.get("password", "").strip()
 
         conn = connect_db()
-        cursor = conn.cursor(dictionary=True)  # Fetch as dictionary to access by column name
+        cursor = conn.cursor(dictionary=True)
 
         cursor.execute("SELECT * FROM admin WHERE email = %s", (email,))
         user = cursor.fetchone()
         cursor.close()
         conn.close()
 
-        if user and bcrypt.check_password_hash(user['password'], password):  # Ensure correct column name
-            session["user"] = user['email']  # Store session with email
+        if user and bcrypt.check_password_hash(user['password'], password):
+            session["user"] = user['email']
             flash("Login successful!", "success")
             return redirect(url_for("admin.index"))
 
@@ -65,8 +64,6 @@ def login():
 
     return render_template("admin_login.html")
     
-
-
 @admin.route("/logout")
 def logout():
     session.pop("user", None)
@@ -101,7 +98,8 @@ def manageitem():
             flash("Item added successfully!", "success")
             return redirect(url_for('admin.manageitem'))
         except Exception as e:
-            return f"Error: {str(e)}", 500
+            flash(f"Error: {str(e)}", "danger")
+            return redirect(url_for('admin.manageitem'))
 
     try:
         connection = connect_db()
@@ -129,6 +127,15 @@ def delete_item(item_id):
     try:
         connection = connect_db()
         cursor = connection.cursor()
+        
+        # Ensure the item exists before attempting to delete it
+        cursor.execute("SELECT item_id FROM items WHERE item_id = %s", (item_id,))
+        item = cursor.fetchone()
+
+        if not item:
+            flash("Item not found.", "danger")
+            return redirect(url_for('admin.manageitem'))
+
         cursor.execute("DELETE FROM items WHERE item_id = %s", (item_id,))
         connection.commit()
         cursor.close()
@@ -138,7 +145,7 @@ def delete_item(item_id):
     except Exception as e:
         return f"Error deleting item: {str(e)}", 500
 
-@admin.route('/edit-item/<int:item_id>', methods=['POST'])
+@admin.route('/edit-item/<int:item_id>', methods=['GET', 'POST'])
 def edit_item(item_id):
     if request.method == 'POST':
         name = request.form.get('name')
@@ -167,12 +174,55 @@ def edit_item(item_id):
             flash("Item updated successfully!", "success")
             return redirect(url_for('admin.manageitem'))
         except Exception as e:
-            return f"Error updating item: {str(e)}", 500
+            flash(f"Error updating item: {str(e)}", "danger")
+            return redirect(url_for('admin.manageitem'))
 
+    # GET method to fetch existing item data
+    try:
+        connection = connect_db()
+        cursor = connection.cursor()
+        cursor.execute("SELECT item_name, price, image FROM items WHERE item_id = %s", (item_id,))
+        item = cursor.fetchone()
+        cursor.close()
+        connection.close()
 
+        if not item:
+            flash("Item not found.", "danger")
+            return redirect(url_for('admin.manageitem'))
+
+        item_name, price, image_data = item
+        image_base64 = base64.b64encode(image_data).decode('utf-8') if image_data else None
+        return render_template("edit_item.html", item_id=item_id, item_name=item_name, price=price, image=image_base64)
+
+    except Exception as e:
+        flash(f"Error fetching item data: {str(e)}", "danger")
+        return redirect(url_for('admin.manageitem'))
+
+@admin.route('/Manage-User', methods=['GET'])
+def users():
+    try:
+        connection = connect_db()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM customer")
+        users = cursor.fetchall()
+        cursor.close()
+        connection.close()
+
+        return render_template("manage_users.html", users=users)
+    except Exception as e:
+        flash(f"Error fetching users: {str(e)}", "danger")
+        return render_template("manage_users.html", users=[])
+
+@admin.route('/Manage-Categories')
+def categories():
+    return render_template("categories.html")
 
 @admin.route('/Manage-Orders')
 def manageorders():
+    return render_template("manage_order.html")
+
+@admin.route('/api/orders', methods=['GET'])
+def get_orders():
     connection = connect_db()
     cursor = connection.cursor(dictionary=True)
 
@@ -182,100 +232,65 @@ def manageorders():
         c.name AS customer_name,
         o.total_amount,
         o.order_date,
-        o.order_status AS status,  
+        o.order_status,
+        o.payment_ss,  # Assuming payment_ss is a LONG BLOB field
         i.item_name,
-        o.quantity 
-        FROM orders o
-        LEFT JOIN customer c ON o.customer_id = c.customer_id
-        LEFT JOIN items i ON o.item_id = i.item_id
-        ORDER BY o.order_date DESC;
+        oi.quantity
+    FROM orders o
+    LEFT JOIN customer c ON o.customer_id = c.customer_id
+    LEFT JOIN order_item oi ON o.order_id = oi.order_id
+    LEFT JOIN items i ON oi.item_id = i.item_id
+    ORDER BY o.order_date DESC;
     """
     cursor.execute(query)
     result = cursor.fetchall()
 
-    orders = {}
+    orders_dict = {}
 
-    if result:  
+    if result:
         for row in result:
             order_id = row['order_id']
-            if order_id not in orders:
-                orders[order_id] = {
+            # Convert the LONG BLOB payment_ss to base64 if it's not None
+            payment_ss_base64 = None
+            if row['payment_ss']:
+                payment_ss_base64 = base64.b64encode(row['payment_ss']).decode('utf-8')
+
+            if order_id not in orders_dict:
+                orders_dict[order_id] = {
                     "order_id": order_id,
                     "name": row["customer_name"],
                     "total_amount": row["total_amount"],
                     "order_date": row["order_date"],
-                    "status": row["status"],
+                    "status": row["order_status"],
+                    "payment_ss": payment_ss_base64,  # Add the base64-encoded image
                     "items": []
                 }
             if row["item_name"]:
-                orders[order_id]["items"].append({"name": row["item_name"], "quantity": row["quantity"]})
+                orders_dict[order_id]["items"].append({"name": row["item_name"], "quantity": row["quantity"]})
 
     connection.close()
 
-    # Convert dictionary values to list
-    orders_list = list(orders.values()) if orders else []
+    return jsonify(list(orders_dict.values()))
 
-
-    return render_template("manage_order.html", orders=orders_list)
-
-
-
-@admin.route('/Manage-Categories')
-def categories():
-    return render_template("categories.html")
-
-@admin.route('/Manage-Users')
-def users():
-
+@admin.route('/api/orders/<int:order_id>', methods=['DELETE'])
+def delete_order(order_id):
     connection = connect_db()
     cursor = connection.cursor()
-    cursor.execute("SELECT * FROM customer")
-    users = cursor.fetchall()
-    connection.close()
 
-    return render_template('manage_users.html', users=users)
-
-
-@admin.route('/delete_order/<int:order_id>')
-def delete_order(order_id):
-    conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM orders WHERE order_id=%s", (order_id,))
-    conn.commit()
-    conn.close()
-    flash("Order deleted successfully!", "success")
-    return redirect(url_for('admin.manageorders')) 
-
-@admin.route('/delete_user/<int:user_id>', methods=['GET'])
-def delete_user(user_id):
     try:
-        connection = connect_db()
-        cursor = connection.cursor()
-        cursor.execute("DELETE FROM customer WHERE customer_id = %s", (user_id,))
+        # Delete the order
+        query = "DELETE FROM orders WHERE order_id = %s"
+        cursor.execute(query, (order_id,))
         connection.commit()
-        cursor.close()
+
+        # Optionally, delete related items from order_item table
+        cursor.execute("DELETE FROM order_item WHERE order_id = %s", (order_id,))
+        connection.commit()
+
         connection.close()
-        flash("user deleted successfully!", "success")
-        return redirect(url_for('admin.users'))
+
+        return jsonify({"message": "Order deleted successfully."}), 200
     except Exception as e:
-        return f"Error deleting item: {str(e)}", 500
-
-
-
-@admin.route('/Manage-User', methods=['POST'])
-def edit_user():
-    user_id = request.form['user_id']
-    name = request.form['name']
-    email = request.form['email']
-    contact = request.form['contact']
-    address = request.form['address']
-
-    try:
-        conn = connect_db()
-        cursor = conn.cursor()
-
-        sql = "UPDATE customer SET name=%s, email=%s, contact=%s, address=%s WHERE customer_id=%s"
-    except Exception as e:
-        flash(f"Error updating user: {str(e)}", 'danger')
-
-    return redirect(url_for('admin.users'))
+        connection.rollback()
+        connection.close()
+        return jsonify({"error": str(e)}), 500
