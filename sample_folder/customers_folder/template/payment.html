@@ -1,88 +1,88 @@
 {% extends "base.html" %}
 
 {% block head %}
-<title>Crave On - Payment</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Crave On - Payment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<!-- Internal CSS -->
-<style>
-    body {
-        background-color: #282c34;
-        margin: 0;
-        padding: 0;
-    }
+    <!-- Internal CSS -->
+    <style>
+        body {
+            background-color: #282c34;
+            margin: 0;
+            padding: 0;
+        }
 
-    .content-wrapper {
-        background-color: #333;
-        padding: 20px;
-        border-radius: 10px;
-        max-width: 1200px;
-        margin: 40px auto;
-    }
+        .content-wrapper {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 1200px;
+            margin: 40px auto;
+        }
 
-    .payment-container {
-        background-color: #444;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-    }
+        .payment-container {
+            background-color: #444;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
 
-    .item-list {
-        margin-bottom: 20px;
-    }
+        .item-list {
+            margin-bottom: 20px;
+        }
 
-    .item-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-        color: white;
-    }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: white;
+        }
 
-    .total-amount {
-        color: #28a745;
-        font-weight: bold;
-        font-size: 18px;
-    }
+        .total-amount {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 18px;
+        }
 
-    .btn-confirm {
-        background-color: #28a745;
-        color: white;
-        width: 100%;
-        margin-top: 15px;
-        padding: 10px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
+        .btn-confirm {
+            background-color: #28a745;
+            color: white;
+            width: 100%;
+            margin-top: 15px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
-    .btn-confirm:hover {
-        background-color: #218838;
-    }
+        .btn-confirm:hover {
+            background-color: #218838;
+        }
 
-    .modal-content {
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
-    }
+        .modal-content {
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+        }
 
-    .btn-info {
-        background-color: #17a2b8;
-        border: none;
-    }
+        .btn-info {
+            background-color: #17a2b8;
+            border: none;
+        }
 
-    .btn-info:hover {
-        background-color: #138496;
-    }
+        .btn-info:hover {
+            background-color: #138496;
+        }
 
-    .btn-success {
-        background-color: #28a745;
-        border: none;
-    }
+        .btn-success {
+            background-color: #28a745;
+            border: none;
+        }
 
-    .btn-success:hover {
-        background-color: #218838;
-    }
-</style>
+        .btn-success:hover {
+            background-color: #218838;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -91,7 +91,7 @@
         <div class="payment-container">
             <h2 class="text-white mb-4 text-center">Order Summary</h2>
 
-      
+            <!-- Item List -->
             <div class="item-list">
                 {% for item in cart_items %}
                 <div class="item-row">
@@ -101,29 +101,30 @@
                 {% endfor %}
             </div>
 
+            <!-- Total Amount -->
             <div class="border-top pt-2">
                 <p class="total-amount">Total Amount: ₱{{ total_amount|round(2) }}</p>
             </div>
 
-            <h4 class="text-white mt-4">Details</h4>
+            <!-- Customer Details -->
+            <h4 class="text-white mt-4">Customer Details</h4>
             <p class="text-white">Name: <span id="userName">{{ user['name'] }}</span></p>
             <p class="text-white">Contact: <span id="userContact">{{ user['contact'] }}</span></p>
             <p class="text-white">Address: <span id="userAddress">{{ user['address'] }}</span></p>
 
-
-
+            <!-- Payment Upload Form -->
             <form action="{{ url_for('customer.payment') }}" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="total_amount" value="{{ total_amount }}">
 
                 <!-- Hidden input for storing the uploaded file -->
                 <input type="file" name="payment_ss" id="payment_ss" accept="image/*" class="form-control d-none" required>
 
-                <h5 class="text-white mt-2 mb-1">Payment</h5>
+                <h5 class="text-white mt-2 mb-1">Payment Proof</h5>
 
-                <!-- Button to trigger modal -->
+                <!-- Button to trigger modal for uploading proof of payment -->
                 <div class="d-flex align-items-center">
                     <button type="button" id="uploadBtn" class="btn btn-info mb-1" data-bs-toggle="modal" data-bs-target="#uploadModal">
-                        Payment Here  
+                        Upload Payment Proof
                     </button>
                     <i id="checkIcon" class="fas fa-check-circle text-success ms-2" style="display: none; font-size: 20px;"></i>
                 </div>                
@@ -157,6 +158,7 @@
                     </div>
                 </div>
 
+                <!-- Order Confirmation Button -->
                 <button type="submit" class="btn-confirm">Order Now</button>
             </form>
         </div>

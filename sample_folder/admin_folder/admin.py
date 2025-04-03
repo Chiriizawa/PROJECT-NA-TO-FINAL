@@ -278,13 +278,13 @@ def delete_order(order_id):
     cursor = connection.cursor()
 
     try:
-        # Delete the order
-        query = "DELETE FROM orders WHERE order_id = %s"
-        cursor.execute(query, (order_id,))
+        # Delete related items first (in case foreign key constraints)
+        cursor.execute("DELETE FROM order_item WHERE order_id = %s", (order_id,))
         connection.commit()
 
-        # Optionally, delete related items from order_item table
-        cursor.execute("DELETE FROM order_item WHERE order_id = %s", (order_id,))
+        # Now delete the order
+        query = "DELETE FROM orders WHERE order_id = %s"
+        cursor.execute(query, (order_id,))
         connection.commit()
 
         connection.close()
@@ -293,4 +293,31 @@ def delete_order(order_id):
     except Exception as e:
         connection.rollback()
         connection.close()
+        print(f"Error deleting order: {e}")  # Debugging log
         return jsonify({"error": str(e)}), 500
+
+
+
+@admin.route('/api/orders/<int:order_id>', methods=['PUT'])
+def update_order_status(order_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    # Update the order status from 'Pending' to 'Approved'
+    cursor.execute("""
+        UPDATE orders 
+        SET order_status = 'Approved' 
+        WHERE order_id = %s AND order_status = 'Pending'
+    """, (order_id,))
+
+    # Commit the changes
+    conn.commit()
+
+    # Check if any rows were updated
+    if cursor.rowcount == 0:
+        return jsonify({'message': 'Order not found or already approved'}), 404
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({'message': 'Order status updated to Approved'}), 200

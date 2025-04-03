@@ -149,41 +149,37 @@ function showOrderDetails(index) {
     } else {
         paymentImage.style.display = "none";  // Hide if no screenshot available
     }
-}
 
-// Function to show delete confirmation modal
-function confirmDelete(orderId) {
-    const deleteButton = document.getElementById("confirmDeleteBtn");
-    
-    // Set the orderId in the button's click handler to be used later
-    deleteButton.onclick = function() {
-        removeOrder(orderId);
+    // Set up the Accept button to approve the order
+    const acceptButton = document.querySelector("#orderModal .btn-success");
+    acceptButton.onclick = function () {
+        updateOrderStatus(order.order_id); // Update the order status to "Approved"
     };
 }
 
-// Function to remove order
-function removeOrder(orderId) {
+// Function to update the order status to "Approved"
+function updateOrderStatus(orderId) {
     fetch(`/Admin/api/orders/${orderId}`, {
-        method: 'DELETE',
+        method: 'PUT',  // Use PUT method to update data
     })
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        // Remove the order from the table
-        let orderIndex = window.ordersData.findIndex(order => order.order_id === orderId);
-        if (orderIndex !== -1) {
-            window.ordersData.splice(orderIndex, 1);  // Remove the order from the data array
-            updateOrderTable();  // Update the table
+        // Find the order in the data and update its status
+        let order = window.ordersData.find(order => order.order_id === orderId);
+        if (order) {
+            order.status = 'Approved';  // Update the order status to "Approved"
+            updateOrderTable();  // Refresh the table
         }
     })
     .catch(error => {
-        console.error("Error deleting order:", error);
-        alert("Failed to delete the order. Please try again.");
+        console.error("Error updating order status:", error);
+        alert("Failed to update the order status. Please try again.");
     });
 }
 
-// Function to update the orders table
+// Function to update the orders table after status change
 function updateOrderTable() {
     let tableBody = document.getElementById("orders-table-body");
     tableBody.innerHTML = "";
@@ -208,6 +204,33 @@ function updateOrderTable() {
         tableBody.innerHTML += row;
     });
 }
+
+function confirmDelete(orderId) {
+    // Add event listener to the confirm delete button in the modal
+    document.getElementById('confirmDeleteBtn').onclick = function () {
+        fetch(`/Admin/api/orders/${orderId}`, {
+            method: 'DELETE',
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to delete order.');
+            }
+            // Remove the deleted order from the table and window.ordersData
+            window.ordersData = window.ordersData.filter(order => order.order_id !== orderId);
+            updateOrderTable();  // Refresh the table after deletion
+
+            // Close the modal using Bootstrap's modal method
+            $('#deleteModal').modal('hide');
+            // Optionally, alert the user about the successful deletion
+            alert('Order deleted successfully!');
+        })
+        .catch(error => {
+            console.error("Error deleting order:", error);
+            alert("Failed to delete order.");
+        });
+    };
+}
+
 </script>
 
 {% endblock %}
