@@ -24,12 +24,11 @@
             <tbody>
                 {% for user in data %}
                 <tr>
-                    <td>{{ user[0] }}</td> 
                     <td>{{ user[1] }}</td> 
                     <td>{{ user[2] }}</td> 
                     <td>{{ user[3] }}</td> 
+                    <td>{{ user[4] }}</td> 
                     <td>
-                        
                         <a href="#" class="btn btn-warning btn-sm">
                             <i class="fas fa-edit"></i> Edit
                         </a>
@@ -40,6 +39,4 @@
         </table>
     </div>
 </div>
-
-
 {% endblock %}

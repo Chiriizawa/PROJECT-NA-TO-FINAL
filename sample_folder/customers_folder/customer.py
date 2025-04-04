@@ -61,47 +61,37 @@ def login():
 
         if not email:
             email_error = "Email is required."
-        
         elif not password:
             password_error = "Password is required."
-
         else:
             conn = connect_db()
-            cursor = conn.cursor()
+            cursor = conn.cursor(dictionary=True)  # Fetch as dict
             cursor.execute("SELECT * FROM customer WHERE email = %s", (email,))
             user = cursor.fetchone()
             cursor.close()
             conn.close()
 
-            # Check if user exists
             if not user:
                 email_error = "Email not found. Please check your email."
-            elif not bcrypt.check_password_hash(user[5], password):
+            elif not bcrypt.check_password_hash(user['password'], password):
                 password_error = "Incorrect password. Please try again."
             else:
-                session["temp_user"] = user[1]
+                # Store temporary session data for verification
+                session["temp_user_id"] = user['customer_id']
                 session["verification_code"] = str(random.randint(100000, 999999))
 
-                # Send email
-                mail = current_app.extensions.get('mail')
-                if mail:
-                    message = Message(
-                        subject="Your Verification Code",
-                        recipients=[email],
-                        sender=current_app.config['MAIL_USERNAME'],
-                        body=f"Your verification code is {session['verification_code']}"
-                    )
-                    mail.send(message)
-                
-                return redirect(url_for("customer.verify"))
+                # Send verification email
+                if send_verification_email(email, session["verification_code"]):
+                    return redirect(url_for("customer.verify"))
+                else:
+                    flash("Failed to send verification email. Please try again.", "danger")
 
     return render_template("customerlogin.html", email_error=email_error, password_error=password_error)
 
 
-
 def send_verification_email(email, code):
     try:
-        mail = current_app.extensions.get('email')
+        mail = current_app.extensions.get('mail')
 
         if not mail:
             return False
@@ -109,15 +99,17 @@ def send_verification_email(email, code):
         message = Message(
             subject="Your Verification Code",
             recipients=[email],
-            sender=current_app.config['MAIL_USERNAME']
+            sender=current_app.config['MAIL_USERNAME'],
+            body=f"Your verification code is: {code}"
         )
-        message.body = f"Your verification code is: {code}"
 
         mail.send(message)
         return True
     except Exception as e:
         print(f"FAILED TO SEND EMAIL: {str(e)}")
         return False
+    
+    
     
 @customer.route("/Verify-Account", methods=['GET', 'POST'])
 def verify():
@@ -129,7 +121,7 @@ def verify():
         ])
 
         if entered_code == session.get("verification_code"):
-            session["user"] = session.pop("temp_user") 
+            session["user"] = session.pop("temp_user_id") 
             session.pop("verification_code", None)  
             return redirect(url_for("customer.index"))
         else:
@@ -272,7 +264,6 @@ def orders():
             })
             item_index += 1
 
-        # Save cart in session to retain for payment
         session['cart_items'] = cart_items
 
     # If no items in the cart, return to menu
@@ -314,15 +305,15 @@ def payment():
 
 @customer.route('/Account')
 def account():
+
     connection = connect_db()
     cursor = connection.cursor()
 
-    cursor.execute('SELECT name, email, contact, address FROM customer ORDER BY customer_id DESC LIMIT 1')
+    cursor.execute('SELECT * FROM customer')
     data = cursor.fetchall()
 
     cursor.close()
     connection.close()
 
     return render_template("account.html", data=data)
-
 

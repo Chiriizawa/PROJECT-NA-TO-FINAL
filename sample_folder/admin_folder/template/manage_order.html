@@ -206,22 +206,24 @@ function updateOrderTable() {
 }
 
 function confirmDelete(orderId) {
-    // Add event listener to the confirm delete button in the modal
     document.getElementById('confirmDeleteBtn').onclick = function () {
-        fetch(`/Admin/api/orders/${orderId}`, {
+        fetch(`/Admin/api/orders/${orderId}`, {  // Ensure correct API endpoint
             method: 'DELETE',
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to delete order.');
+                return response.json().then(err => { throw new Error(err.error || 'Failed to delete order.'); });
             }
-            // Remove the deleted order from the table and window.ordersData
-            window.ordersData = window.ordersData.filter(order => order.order_id !== orderId);
-            updateOrderTable();  // Refresh the table after deletion
+            return response.json();
+        })
+        .then(data => {
+            console.log(data.message); // Log the success message
 
-            // Close the modal using Bootstrap's modal method
+            // Remove the deleted order from the table and update UI
+            window.ordersData = window.ordersData.filter(order => order.order_id !== orderId);
+            updateOrderTable();
+
             $('#deleteModal').modal('hide');
-            // Optionally, alert the user about the successful deletion
             alert('Order deleted successfully!');
         })
         .catch(error => {
@@ -230,6 +232,7 @@ function confirmDelete(orderId) {
         });
     };
 }
+
 
 </script>
 
