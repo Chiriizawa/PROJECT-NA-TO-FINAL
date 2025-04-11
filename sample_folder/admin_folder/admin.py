@@ -47,14 +47,17 @@ def login():
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "").strip()
 
+        # Connect to the database to check for user credentials
         conn = connect_db()
         cursor = conn.cursor(dictionary=True)
 
+        # Query to fetch the admin user based on email
         cursor.execute("SELECT * FROM admin WHERE email = %s", (email,))
         user = cursor.fetchone()
         cursor.close()
         conn.close()
 
+        # Check if the user exists and if the password matches the hashed one
         if user and bcrypt.check_password_hash(user['password'], password):
             session["user"] = user['email']
             flash("Login successful!", "success")
@@ -63,6 +66,8 @@ def login():
         flash("Invalid credentials.", "danger")
 
     return render_template("admin_login.html")
+
+
     
 @admin.route("/logout")
 def logout():
@@ -213,9 +218,30 @@ def users():
         flash(f"Error fetching users: {str(e)}", "danger")
         return render_template("manage_users.html", users=[])
 
-@admin.route('/Manage-Categories')
+@admin.route('/Manage-Categories', methods=['GET', 'POST'])
 def categories():
-    return render_template("categories.html")
+    connection = connect_db()
+    cursor = connection.cursor()
+
+    if request.method == 'POST':
+        category_name = request.form.get('category_name', '').strip()
+
+        if category_name:
+            try:
+                cursor.execute("INSERT INTO category (category_name) VALUES (%s)", (category_name,))
+                connection.commit()
+                flash("Category added successfully!", "success")
+            except mysql.connector.Error as err:
+                flash(f"Error: {err}", "danger")
+
+    cursor.execute("SELECT category_id, category_name FROM category")
+    category_list = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return render_template("categories.html", categories=category_list)
+
 
 @admin.route('/Manage-Orders')
 def manageorders():
