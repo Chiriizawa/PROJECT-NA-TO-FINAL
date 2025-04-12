@@ -8,7 +8,7 @@ bcrypt = Bcrypt()
 
 db_config = {
     'host': 'localhost',
-    'database': 'onlinefood',
+    'database': 'foodordering',
     'user': 'root',
     'password': '',
 }
@@ -259,7 +259,7 @@ def get_orders():
         o.total_amount,
         o.order_date,
         o.order_status,
-        o.payment_ss,  # Assuming payment_ss is a LONG BLOB field
+        o.payment_ss,
         i.item_name,
         oi.quantity
     FROM orders o

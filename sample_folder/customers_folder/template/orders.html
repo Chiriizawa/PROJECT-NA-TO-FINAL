@@ -112,13 +112,13 @@
                             {% else %}
                                 <img class="item-image" src="data:image/jpeg;base64,{{ item.image_url }}" alt="{{ item.name }}">
                             {% endif %}
-                            <p>{{ item.name }} - {{ item.quantity }} x ₱{{ item.price }}.00</p>
+                            <p>{{ item.name }} - {{ item.quantity }} x ₱{{ item.price }}</p>
                         </div>
                     </div>
                     {% endfor %}
 
                     <div class="border-top pt-2">
-                        <p class="total-amount">Total Amount: ₱{{ total_amount }}.00</p>
+                        <p class="total-amount">Total Amount: ₱{{ total_amount }}</p>
                         <a href="{{url_for('customer.payment')}}"><button type="submit" class="btn-order">PROCEED TO PAYMENT</button></a>
                     </div>
                 </form>

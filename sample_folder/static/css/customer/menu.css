@@ -151,3 +151,35 @@ input[type="number"]::-webkit-outer-spin-button {
         font-size: 14px;
     }
 }
+
+.bg-container {
+    width: 100%;
+    height: 100vh;
+    background: url("../../../static/images/bg1.jpg") no-repeat center center;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-y: auto;
+}
+
+/* Fixed Cart Styling */
+.cart-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 400px;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    background: white;
+    z-index: 1000;
+}
+
+/* Center Content and Limit Width */
+.menu-container {
+    width: 90%;
+    max-width: 1200px;
+    margin-top: 40px;
+}

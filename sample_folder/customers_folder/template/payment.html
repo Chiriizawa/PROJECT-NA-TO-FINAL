@@ -4,85 +4,7 @@
     <title>Crave On - Payment</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-    <!-- Internal CSS -->
-    <style>
-        body {
-            background-color: #282c34;
-            margin: 0;
-            padding: 0;
-        }
-
-        .content-wrapper {
-            background-color: #333;
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 1200px;
-            margin: 40px auto;
-        }
-
-        .payment-container {
-            background-color: #444;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-
-        .item-list {
-            margin-bottom: 20px;
-        }
-
-        .item-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            color: white;
-        }
-
-        .total-amount {
-            color: #28a745;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .btn-confirm {
-            background-color: #28a745;
-            color: white;
-            width: 100%;
-            margin-top: 15px;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .btn-confirm:hover {
-            background-color: #218838;
-        }
-
-        .modal-content {
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
-        }
-
-        .btn-info {
-            background-color: #17a2b8;
-            border: none;
-        }
-
-        .btn-info:hover {
-            background-color: #138496;
-        }
-
-        .btn-success {
-            background-color: #28a745;
-            border: none;
-        }
-
-        .btn-success:hover {
-            background-color: #218838;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/customer/payment.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -115,59 +37,76 @@
             <!-- Payment Upload Form -->
             <form action="{{ url_for('customer.payment') }}" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="total_amount" value="{{ total_amount }}">
-
-                <!-- Hidden input for storing the uploaded file -->
-                <input type="file" name="payment_ss" id="payment_ss" accept="image/*" class="form-control d-none" required>
-
+            
                 <h5 class="text-white mt-2 mb-1">Payment Proof</h5>
-
-                <!-- Button to trigger modal for uploading proof of payment -->
-                <div class="d-flex align-items-center">
-                    <button type="button" id="uploadBtn" class="btn btn-info mb-1" data-bs-toggle="modal" data-bs-target="#uploadModal">
-                        Upload Payment Proof
-                    </button>
-                    <i id="checkIcon" class="fas fa-check-circle text-success ms-2" style="display: none; font-size: 20px;"></i>
-                </div>                
-
-                <!-- Modal for Uploading Payment Proof -->
-                <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+            
+                <!-- Button to trigger modal -->
+                <button type="button" class="btn btn-info mb-1" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    Upload Payment Proof
+                </button>
+                <i id="checkIcon" class="fas fa-check-circle text-success ms-2" style="display: none; font-size: 20px;"></i>
+            
+                <!-- Modal -->
+                <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content bg-dark text-white">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="uploadModalLabel">Upload Proof of Payment</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <h5 class="modal-title">Upload Proof of Payment</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
-
                             <div class="modal-body">
                                 <div class="mb-3">
-                                    <label for="payment_ss_modal" class="form-label">Select File or Picture</label>
-                                    <input type="file" id="payment_ss_modal" accept="image/*" class="form-control" required>
+                                    <label for="payment_ss" class="form-label">Select File</label>
+                                    <input type="file" id="payment_ss" name="payment_ss" accept="image/*" class="form-control" required>
                                 </div>
-
-                                <div id="imagePreview" class="mt-3" style="display: none;">
-                                    <p class="text-success">Preview:</p>
-                                    <img id="previewImg" src="#" alt="Preview Image" class="img-fluid rounded shadow" style="max-width: 100%; height: auto;">
+                                <div id="imagePreview" style="display:none;">
+                                    <img id="previewImg" src="#" class="img-fluid rounded shadow" alt="Preview">
                                 </div>
                             </div>
-
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="button" id="confirmUploadBtn" class="btn btn-success">Confirm Upload</button>
+                                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Order Confirmation Button -->
-                <button type="submit" class="btn-confirm">Order Now</button>
+            
+                <!-- Submit -->
+                <button type="submit" class="btn-confirm mt-3">Order Now</button>
             </form>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category == 'danger' %}
+                            <script>
+                                alert("{{ message }}");
+                            </script>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
         </div>
     </div>
 </div>
 
 <script>
+
+    document.querySelector('form').addEventListener('submit', function(event) {
+        const paymentFile = document.getElementById('payment_ss').files.length;
+    
+        // Check if payment screenshot is uploaded
+        if (paymentFile === 0) {
+            alert("Payment screenshot is required.");
+            event.preventDefault();  // Prevent form submission
+        } else {
+            // Show success message
+            alert("Your order has been placed successfully and will appear in your order history.");
+        }
+    });
+    
     // Handle file preview inside modal
-    document.getElementById('payment_ss_modal').addEventListener('change', function(event) {
+    document.getElementById('payment_ss').addEventListener('change', function(event) {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
@@ -176,11 +115,10 @@
                 document.getElementById('imagePreview').style.display = 'block';
             };
             reader.readAsDataURL(file);
-        } else {
-            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('checkIcon').style.display = 'block';
         }
     });
-
+    
     // Confirm upload and copy file to hidden input
     document.getElementById('confirmUploadBtn').addEventListener('click', function() {
         const modalFileInput = document.getElementById('payment_ss_modal');

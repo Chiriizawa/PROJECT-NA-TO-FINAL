@@ -6,40 +6,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename = 'css/customer/menu.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename = 'css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        /* Full Page Background */
-        .bg-container {
-            width: 100%;
-            height: 100vh;
-            background: url("../static/images/bg1.jpg") no-repeat center center;
-            background-size: cover;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            overflow-y: auto;
-        }
-
-        /* Fixed Cart Styling */
-        .cart-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 400px;
-            max-height: 400px;
-            overflow-y: auto;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            background: white;
-            z-index: 1000;
-        }
-
-        /* Center Content and Limit Width */
-        .menu-container {
-            width: 90%;
-            max-width: 1200px;
-            margin-top: 40px;
-        }
-    </style>
 {% endblock %}
 
 {% block content %}
@@ -103,7 +69,7 @@
             </div>
             <div class="d-flex justify-content-between align-items-center border-top pt-3">
                 <span class="fw-bold">Total</span>
-                <span class="fw-bold" id="total-amount">₱0.00</span>
+                <span class="fw-bold" id="total-amount">₱0</span>
             </div>
         
             <!-- Checkout Form with Hidden Inputs -->
@@ -129,7 +95,6 @@
                             class="fa-brands fa-instagram"></i></a>
                 </div>
             </div>
-         
             <div class="col-md-3">
                 <h5 class="fw-bold">Contact Us</h5>
                 <p><i class="bi bi-telephone-fill text-warning"></i> 1123303012</p>
@@ -239,7 +204,7 @@ function renderCart() {
             </div>`;
     }
 
-    document.getElementById("total-amount").textContent = `₱${subTotal}.00`;
+    document.getElementById("total-amount").textContent = `₱${subTotal}`;
 
     if (Object.keys(cart).length === 0) {
         cartItems.innerHTML = `<p class="text-dark">Your cart is empty.</p>`;

@@ -15,7 +15,7 @@ bcrypt = Bcrypt()
 
 db_config = {
     'host':'localhost',
-    'database':'onlinefood',
+    'database':'foodordering',
     'user':'root',
     'password':'',
 }
@@ -285,27 +285,60 @@ def payment():
     if 'user' not in session:
         return redirect(url_for('customer.login'))
 
-    cart_items = session.get('cart_items', [])
+    connection = connect_db()
+    cursor = connection.cursor(dictionary=True)
 
+    # Get latest user
+    cursor.execute("SELECT customer_id, name, email, contact, address FROM customer ORDER BY customer_id DESC LIMIT 1")
+    user = cursor.fetchone()
+
+    cart_items = session.get('cart_items', [])
     if not cart_items:
         flash("Your cart is empty. Add items first!", "warning")
         return redirect(url_for('customer.menu'))
 
     total_amount = sum(item['price'] * item['quantity'] for item in cart_items)
 
-    connection = connect_db()
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute("SELECT customer_id, name, email, contact, address FROM customer ORDER BY customer_id DESC LIMIT 1")
-    user = cursor.fetchone()
+    if request.method == 'POST':
+        payment_file = request.files.get('payment_ss')
+        if not payment_file or payment_file.filename == '':
+            flash("Payment screenshot is required.", "danger")
+            return redirect(url_for('customer.payment'))
 
-    connection.commit()
+        payment_ss = payment_file.read()
+
+        # Insert into orders table
+        cursor.execute("""
+            INSERT INTO orders (customer_id, total_amount, order_status, payment_ss)
+            VALUES (%s, %s, %s, %s)
+        """, (user['customer_id'], total_amount, 'Pending', payment_ss))
+        order_id = cursor.lastrowid  
+
+        # Insert each item into order_item table
+        for item in cart_items:
+            item_id = item.get('item_id') or item.get('id')  # Handle both keys
+            cursor.execute("""
+                INSERT INTO order_item (order_id, item_id, quantity)
+                VALUES (%s, %s, %s)
+            """, (order_id, item_id, item['quantity']))
+
+        connection.commit()
+        connection.close()
+
+        # Clear the cart
+        session['cart_items'] = []
+
+        flash("Order placed successfully!", "success")
+        return redirect(url_for('customer.menu'))
+
     connection.close()
     return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user)
 
 
+
+
 @customer.route('/Account')
 def account():
-
     connection = connect_db()
     cursor = connection.cursor()
 
