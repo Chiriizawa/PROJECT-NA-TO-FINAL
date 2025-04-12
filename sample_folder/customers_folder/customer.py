@@ -109,8 +109,6 @@ def send_verification_email(email, code):
         print(f"FAILED TO SEND EMAIL: {str(e)}")
         return False
     
-    
-    
 @customer.route("/Verify-Account", methods=['GET', 'POST'])
 def verify():
     if request.method == "POST":
@@ -254,17 +252,26 @@ def orders():
 
     # Check for submitted cart items in POST
     if request.method == 'POST':
+    # Get current cart or start new
+        cart_items = session.get('cart_items', [])
+
         while f'item_name_{item_index}' in request.form:
-            cart_items.append({
+            new_item = {
                 'item_id': request.form.get(f'item_id_{item_index}', ''),
                 'name': request.form[f'item_name_{item_index}'],
                 'price': float(request.form[f'item_price_{item_index}']),
                 'quantity': int(request.form[f'item_quantity_{item_index}']),
                 'image_url': request.form.get(f'item_image_{item_index}', '')
-            })
-            item_index += 1
+            }
 
-        session['cart_items'] = cart_items
+            # Optionally check if item already exists, then increase quantity
+            existing = next((item for item in cart_items if item['item_id'] == new_item['item_id']), None)
+            if existing:
+                existing['quantity'] += new_item['quantity']
+            else:
+                cart_items.append(new_item)
+
+            item_index += 1
 
     # If no items in the cart, return to menu
     if not cart_items and 'cart_items' in session:
@@ -312,7 +319,7 @@ def payment():
             INSERT INTO orders (customer_id, total_amount, order_status, payment_ss)
             VALUES (%s, %s, %s, %s)
         """, (user['customer_id'], total_amount, 'Pending', payment_ss))
-        order_id = cursor.lastrowid  
+        order_id = cursor.lastrowid  # Get the ID of the newly inserted order
 
         # Insert each item into order_item table
         for item in cart_items:
@@ -333,9 +340,6 @@ def payment():
 
     connection.close()
     return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user)
-
-
-
 
 @customer.route('/Account')
 def account():

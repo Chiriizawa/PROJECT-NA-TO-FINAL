@@ -106,7 +106,7 @@
                     <input type="hidden" name="item_image_{{ loop.index0 }}" value="{{ item.image_url }}">
 
                     <div class="cart-item">
-                        <div class="item-info">
+                       <div class="item-info">
                             {% if item.image_url.startswith('data:image') %}
                                 <img class="item-image" src="{{ item.image_url }}" alt="{{ item.name }}">
                             {% else %}
@@ -119,8 +119,8 @@
 
                     <div class="border-top pt-2">
                         <p class="total-amount">Total Amount: ₱{{ total_amount }}</p>
-                        <a href="{{url_for('customer.payment')}}"><button type="submit" class="btn-order">PROCEED TO PAYMENT</button></a>
-                    </div>
+                        <button type="submit" class="btn-order">PROCEED TO PAYMENT</button>
+                    </div>                    
                 </form>
             </div>
         </div>
@@ -153,7 +153,6 @@
 
         document.querySelector('.total-amount').textContent = `Total Amount: ₱${totalAmount.toFixed(2)}`;
     }
-
 </script>
 
 
