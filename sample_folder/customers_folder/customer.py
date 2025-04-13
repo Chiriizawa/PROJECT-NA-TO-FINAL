@@ -312,7 +312,6 @@ def payment():
 
         payment_ss = payment_file.read()
 
-        # Insert into orders
         cursor.execute("""
             INSERT INTO orders (customer_id, total_amount, order_status, payment_ss)
             VALUES (%s, %s, %s, %s)
@@ -329,18 +328,19 @@ def payment():
         connection.commit()
         connection.close()
 
-        session['cart_items'] = []  # Clear cart only after successful order
+        session['cart_items'] = [] 
 
         flash("Order placed successfully!", "success")
-        return redirect(url_for('customer.menu'))
+        return redirect(url_for('customer.myorder', highlight_order_id=order_id))
 
     connection.close()
     return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user)
 
 
-@customer.route('/MyOrders', methods=['GET', 'POST'])
+@customer.route('/MyOrders', methods=['GET'])
 def myorder():
-    return  render_template("myorder.html")
+    highlight_order_id = request.args.get('highlight_order_id')
+    return render_template("myorder.html", highlight_order_id=highlight_order_id)
 
 
 @customer.route('/api/myorders', methods=['GET'])
@@ -372,7 +372,6 @@ def my_orders():
     if result:
         for row in result:
             order_id = row['order_id']
-            # Convert the LONG BLOB payment_ss to base64 if it's not None
             payment_ss_base64 = None
             if row['payment_ss']:
                 payment_ss_base64 = base64.b64encode(row['payment_ss']).decode('utf-8')
@@ -384,7 +383,7 @@ def my_orders():
                     "total_amount": row["total_amount"],
                     "order_date": row["order_date"],
                     "status": row["order_status"],
-                    "payment_ss": payment_ss_base64,  # Add the base64-encoded image
+                    "payment_ss": payment_ss_base64,
                     "items": []
                 }
             if row["item_name"]:
@@ -393,6 +392,7 @@ def my_orders():
     connection.close()
 
     return jsonify(list(orders_dict.values()))
+
 
 @customer.route('/api/myorders/<int:order_id>', methods=['PUT'])
 def update_order_status(order_id):
