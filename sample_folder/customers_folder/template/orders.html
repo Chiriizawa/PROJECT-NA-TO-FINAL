@@ -4,15 +4,12 @@
     <title>Crave On - Orders</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-    <!-- Internal CSS -->
     <style>
         body {
             background-color: #282c34;
             margin: 0;
             padding: 0;
         }
-
         .content-wrapper {
             background-color: #333;
             padding: 20px;
@@ -20,14 +17,12 @@
             max-width: 1200px;
             margin: 40px auto;
         }
-
         .cart-container {
             background-color: #444;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
-
         .cart-item {
             display: flex;
             justify-content: space-between;
@@ -37,12 +32,10 @@
             background-color: #555;
             border-radius: 5px;
         }
-
         .cart-item .item-info {
             display: flex;
             align-items: center;
         }
-
         .cart-item img {
             width: 60px;
             height: 60px;
@@ -51,12 +44,10 @@
             margin-right: 15px;
             border: 1px solid #ccc;
         }
-
         .cart-item p {
             margin: 0;
             color: white;
         }
-
         .btn-remove {
             background-color: transparent;
             border: none;
@@ -64,16 +55,13 @@
             cursor: pointer;
             font-size: 18px;
         }
-
         .btn-remove:hover {
             color: #ff4d4d;
         }
-
         .total-amount {
             color: white;
             font-weight: bold;
         }
-
         .btn-order {
             background-color: #28a745;
             color: white;
@@ -84,7 +72,6 @@
             border-radius: 5px;
             cursor: pointer;
         }
-
         .btn-order:hover {
             background-color: #218838;
         }
@@ -92,21 +79,14 @@
 {% endblock %}
 
 {% block content %}
-
 <div class="wrapper">
     <div class="content-wrapper">
         <div class="col-md-8 mx-auto mt-4">
             <div class="cart-container">
-                <form id="orderForm" action="{{ url_for('customer.payment') }}" method="POST">
+                <form id="orderForm">
                     {% for item in cart_items %}
-                    <input type="hidden" name="item_id_{{ loop.index0 }}" value="{{ item.item_id }}">
-                    <input type="hidden" name="item_name_{{ loop.index0 }}" value="{{ item.name }}">
-                    <input type="hidden" name="item_price_{{ loop.index0 }}" value="{{ item.price }}">
-                    <input type="hidden" name="item_quantity_{{ loop.index0 }}" value="{{ item.quantity }}">
-                    <input type="hidden" name="item_image_{{ loop.index0 }}" value="{{ item.image_url }}">
-
-                    <div class="cart-item">
-                       <div class="item-info">
+                    <div class="cart-item" data-item-id="{{ item.item_id }}" data-name="{{ item.name }}" data-price="{{ item.price }}" data-quantity="{{ item.quantity }}" data-image="{{ item.image_url }}">
+                        <div class="item-info">
                             {% if item.image_url.startswith('data:image') %}
                                 <img class="item-image" src="{{ item.image_url }}" alt="{{ item.name }}">
                             {% else %}
@@ -116,10 +96,9 @@
                         </div>
                     </div>
                     {% endfor %}
-
                     <div class="border-top pt-2">
                         <p class="total-amount">Total Amount: ₱{{ total_amount }}</p>
-                        <button type="submit" class="btn-order">PROCEED TO PAYMENT</button>
+                        <button type="button" class="btn-order" id="proceedPaymentBtn">PROCEED TO PAYMENT</button>
                     </div>                    
                 </form>
             </div>
@@ -127,33 +106,41 @@
     </div>
 </div>
 
-
 <script>
-    // Remove Item
-    function removeItem(itemId) {
-        // Remove the item dynamically using JavaScript
-        const item = document.querySelector(`input[value="${itemId}"]`).closest('.cart-item');
-        item.remove();
-        updateTotal();
-    }
-
-    // Update Total Amount dynamically
+    // Update Total (optional, can be enhanced to re-calculate after removing items)
     function updateTotal() {
         let totalAmount = 0;
         const items = document.querySelectorAll('.cart-item');
-        
+
         items.forEach(item => {
-            const priceText = item.querySelector('p').textContent.match(/₱([\d.]+)/);
-            if (priceText) {
-                const price = parseFloat(priceText[1]);
-                const quantity = parseInt(item.querySelector('p').textContent.match(/(\d+) x/)[1]);
-                totalAmount += price * quantity;
-            }
+            const price = parseFloat(item.dataset.price);
+            const quantity = parseInt(item.dataset.quantity);
+            totalAmount += price * quantity;
         });
 
         document.querySelector('.total-amount').textContent = `Total Amount: ₱${totalAmount.toFixed(2)}`;
     }
+
+    // Proceed to Payment Click
+    document.getElementById('proceedPaymentBtn').addEventListener('click', function () {
+        const cartItems = [];
+        document.querySelectorAll('.cart-item').forEach(item => {
+            cartItems.push({
+                item_id: item.dataset.itemId,
+                name: item.dataset.name,
+                price: parseFloat(item.dataset.price),
+                quantity: parseInt(item.dataset.quantity),
+                image_url: item.dataset.image
+            });
+        });
+
+        if (cartItems.length === 0) {
+            alert("Your cart is empty!");
+            return;
+        }
+
+        sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
+        window.location.href = "{{ url_for('customer.payment') }}";
+    });
 </script>
-
-
 {% endblock %}

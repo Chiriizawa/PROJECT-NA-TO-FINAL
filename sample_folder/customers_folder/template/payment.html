@@ -14,18 +14,13 @@
             <h2 class="text-white mb-4 text-center">Order Summary</h2>
 
             <!-- Item List -->
-            <div class="item-list">
-                {% for item in cart_items %}
-                <div class="item-row">
-                    <span>{{ item.name }} (x{{ item.quantity }})</span>
-                    <span>₱{{ (item.price * item.quantity)|round(2) }}</span>
-                </div>
-                {% endfor %}
+            <div class="item-list" id="cart-items-container">
+                <!-- JS will inject items here -->
             </div>
 
             <!-- Total Amount -->
             <div class="border-top pt-2">
-                <p class="total-amount">Total Amount: ₱{{ total_amount|round(2) }}</p>
+                <p class="total-amount" id="total-amount">Total Amount: ₱0.00</p>
             </div>
 
             <!-- Customer Details -->
@@ -36,16 +31,16 @@
 
             <!-- Payment Upload Form -->
             <form action="{{ url_for('customer.payment') }}" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="total_amount" value="{{ total_amount }}">
-            
+                <input type="hidden" name="total_amount" id="hidden-total-amount" value="">
+
                 <h5 class="text-white mt-2 mb-1">Payment Proof</h5>
-            
-                <!-- Button to trigger modal -->
+
+                <!-- Upload Button + Check Icon -->
                 <button type="button" class="btn btn-info mb-1" data-bs-toggle="modal" data-bs-target="#uploadModal">
                     Upload Payment Proof
                 </button>
                 <i id="checkIcon" class="fas fa-check-circle text-success ms-2" style="display: none; font-size: 20px;"></i>
-            
+
                 <!-- Modal -->
                 <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog">
@@ -57,7 +52,7 @@
                             <div class="modal-body">
                                 <div class="mb-3">
                                     <label for="payment_ss" class="form-label">Select File</label>
-                                    <input type="file" id="payment_ss" name="payment_ss" accept="image/*" class="form-control" required>
+                                    <input type="file" id="payment_ss" name="payment_ss" accept="image/*" class="form-control">
                                 </div>
                                 <div id="imagePreview" style="display:none;">
                                     <img id="previewImg" src="#" class="img-fluid rounded shadow" alt="Preview">
@@ -70,42 +65,46 @@
                         </div>
                     </div>
                 </div>
-            
+
                 <!-- Submit -->
                 <button type="submit" class="btn-confirm mt-3">Order Now</button>
             </form>
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        {% if category == 'danger' %}
-                            <script>
-                                alert("{{ message }}");
-                            </script>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
 
         </div>
     </div>
 </div>
 
 <script>
+    // Load cart data from sessionStorage and display
+    const cartItemsContainer = document.getElementById('cart-items-container');
+    const totalAmountDisplay = document.getElementById('total-amount');
+    const hiddenTotalAmountInput = document.getElementById('hidden-total-amount');
 
-    document.querySelector('form').addEventListener('submit', function(event) {
-        const paymentFile = document.getElementById('payment_ss').files.length;
-    
-        // Check if payment screenshot is uploaded
-        if (paymentFile === 0) {
-            alert("Payment screenshot is required.");
-            event.preventDefault();  // Prevent form submission
-        } else {
-            // Show success message
-            alert("Your order has been placed successfully and will appear in your order history.");
-        }
+    const cartData = JSON.parse(sessionStorage.getItem('cart_items')) || [];
+    let totalAmount = 0;
+
+    cartData.forEach(item => {
+        const itemRow = document.createElement('div');
+        itemRow.classList.add('item-row');
+
+        const nameQty = document.createElement('span');
+        nameQty.textContent = `${item.name} (x${item.quantity})`;
+
+        const price = document.createElement('span');
+        const subtotal = item.price * item.quantity;
+        price.textContent = `₱${subtotal.toFixed(2)}`;
+
+        totalAmount += subtotal;
+
+        itemRow.appendChild(nameQty);
+        itemRow.appendChild(price);
+        cartItemsContainer.appendChild(itemRow);
     });
-    
-    // Handle file preview inside modal
+
+    totalAmountDisplay.textContent = `Total Amount: ₱${totalAmount.toFixed(2)}`;
+    hiddenTotalAmountInput.value = totalAmount.toFixed(2);
+
+    // File preview for payment_ss
     document.getElementById('payment_ss').addEventListener('change', function(event) {
         const file = event.target.files[0];
         if (file) {
@@ -118,27 +117,6 @@
             document.getElementById('checkIcon').style.display = 'block';
         }
     });
-    
-    // Confirm upload and copy file to hidden input
-    document.getElementById('confirmUploadBtn').addEventListener('click', function() {
-        const modalFileInput = document.getElementById('payment_ss_modal');
-        const mainFileInput = document.getElementById('payment_ss');
-        
-        if (modalFileInput.files.length > 0) {
-            // Copy file from modal to main hidden input
-            mainFileInput.files = modalFileInput.files;
-
-            // Close the modal
-            var modal = bootstrap.Modal.getInstance(document.getElementById('uploadModal'));
-            modal.hide();
-
-            // Show the check icon
-            document.getElementById('checkIcon').style.display = 'block';
-        } else {
-            alert("Please select a file before confirming.");
-        }
-    });
-
 </script>
 
 {% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Crave On - My Orders</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/customer/myorders.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="col-md-10 mx-auto">
+        <div class="orders-container">
+            <h2 class="text-white mb-4">My Orders</h2>
+            <table class="table table-dark table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Items</th>
+                        <th>Qty</th>
+                        <th>Total Amount</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="orders-table-body">
+                    <!-- Order rows will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="orderModalLabel">Order Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Name:</strong> <span id="modalName"></span></p>
+        <p><strong>Contact:</strong> <span id="modalContact"></span></p>
+        <p><strong>Address:</strong> <span id="modalAddress"></span></p>
+        <p><strong>Order Date:</strong> <span id="modalOrderDate"></span></p>
+        <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+        <p><strong>Items:</strong></p>
+        <ul id="modalItems"></ul>
+        <p><strong>Total Amount:</strong> ₱<span id="modalTotalAmount"></span></p>
+        <p><strong>Payment Screenshot:</strong></p>
+        <img id="modalPaymentScreenshot" src="" class="img-fluid rounded shadow">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+fetch('/CraveOn/api/myorders')
+    .then(response => response.json())
+    .then(data => {
+        window.ordersData = data; // Make accessible to other functions
+        updateOrderTable();
+    });
+
+function updateOrderTable() {
+    let tableBody = document.getElementById("orders-table-body");
+    tableBody.innerHTML = "";
+    window.ordersData.forEach((order, index) => {
+        let row = `<tr onclick="showOrderDetails(${index})" style="cursor:pointer;">
+            <td>${order.name}</td>
+            <td>${order.items.map(item => item.name).join("<br>")}</td>
+            <td>${order.items.map(item => "x" + item.quantity).join("<br>")}</td>
+            <td>₱${order.total_amount}</td>
+            <td>${order.order_date}</td>
+            <td>${order.status}</td>
+        </tr>`;
+        tableBody.innerHTML += row;
+    });
+}
+
+function showOrderDetails(index) {
+    const order = window.ordersData[index];
+    document.getElementById("modalName").textContent = order.name;
+    document.getElementById("modalContact").textContent = order.contact;
+    document.getElementById("modalAddress").textContent = order.address;
+    document.getElementById("modalOrderDate").textContent = order.order_date;
+    document.getElementById("modalStatus").textContent = order.status;
+    document.getElementById("modalTotalAmount").textContent = order.total_amount;
+
+    const itemsList = document.getElementById("modalItems");
+    itemsList.innerHTML = "";
+    order.items.forEach(item => {
+        itemsList.innerHTML += `<li>${item.name} - x${item.quantity} - ₱${item.price}</li>`;
+    });
+
+    document.getElementById("modalPaymentScreenshot").src = order.payment_screenshot;
+
+    let orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
+    orderModal.show();
+}
+</script>
+{% endblock %}

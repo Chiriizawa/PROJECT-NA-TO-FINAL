@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, render_template, request, flash, session, redirect, url_for, current_app
+from flask import Flask, Blueprint, render_template, request, flash, session, redirect, url_for, current_app, jsonify
 import mysql.connector
 import base64
 import re
@@ -15,7 +15,7 @@ bcrypt = Bcrypt()
 
 db_config = {
     'host':'localhost',
-    'database':'foodordering',
+    'database':'onlinefood',
     'user':'root',
     'password':'',
 }
@@ -247,14 +247,10 @@ def orders():
     if 'user' not in session:
         return redirect(url_for('customer.login'))
 
-    cart_items = []
-    item_index = 0
+    cart_items = session.get('cart_items', [])
 
-    # Check for submitted cart items in POST
     if request.method == 'POST':
-    # Get current cart or start new
-        cart_items = session.get('cart_items', [])
-
+        item_index = 0
         while f'item_name_{item_index}' in request.form:
             new_item = {
                 'item_id': request.form.get(f'item_id_{item_index}', ''),
@@ -264,7 +260,6 @@ def orders():
                 'image_url': request.form.get(f'item_image_{item_index}', '')
             }
 
-            # Optionally check if item already exists, then increase quantity
             existing = next((item for item in cart_items if item['item_id'] == new_item['item_id']), None)
             if existing:
                 existing['quantity'] += new_item['quantity']
@@ -273,9 +268,8 @@ def orders():
 
             item_index += 1
 
-    # If no items in the cart, return to menu
-    if not cart_items and 'cart_items' in session:
-        cart_items = session['cart_items']
+        # Store updated cart in session
+        session['cart_items'] = cart_items
 
     total_amount = sum(item['price'] * item['quantity'] for item in cart_items)
 
@@ -285,7 +279,11 @@ def orders():
     users = cursor.fetchone()
     connection.close()
 
+    if not cart_items:
+        flash("Your cart is empty. Please add items.", "warning")
+
     return render_template('orders.html', cart_items=cart_items, total_amount=total_amount, users=users)
+
 
 @customer.route('/Payment', methods=['GET', 'POST'])
 def payment():
@@ -295,35 +293,34 @@ def payment():
     connection = connect_db()
     cursor = connection.cursor(dictionary=True)
 
-    # Get latest user
-    cursor.execute("SELECT customer_id, name, email, contact, address FROM customer ORDER BY customer_id DESC LIMIT 1")
+    cursor.execute("SELECT customer_id, name, email, contact, address FROM customer WHERE customer_id = %s", (session['user'],))
     user = cursor.fetchone()
 
     cart_items = session.get('cart_items', [])
-    if not cart_items:
-        flash("Your cart is empty. Add items first!", "warning")
-        return redirect(url_for('customer.menu'))
-
     total_amount = sum(item['price'] * item['quantity'] for item in cart_items)
+
+    if not cart_items:
+        flash("Your cart is empty. Please add items.", "warning")
+        connection.close()
+        return render_template('payment.html', cart_items=[], total_amount=0, user=user)
 
     if request.method == 'POST':
         payment_file = request.files.get('payment_ss')
         if not payment_file or payment_file.filename == '':
             flash("Payment screenshot is required.", "danger")
-            return redirect(url_for('customer.payment'))
+            return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user)
 
         payment_ss = payment_file.read()
 
-        # Insert into orders table
+        # Insert into orders
         cursor.execute("""
             INSERT INTO orders (customer_id, total_amount, order_status, payment_ss)
             VALUES (%s, %s, %s, %s)
         """, (user['customer_id'], total_amount, 'Pending', payment_ss))
-        order_id = cursor.lastrowid  # Get the ID of the newly inserted order
+        order_id = cursor.lastrowid
 
-        # Insert each item into order_item table
         for item in cart_items:
-            item_id = item.get('item_id') or item.get('id')  # Handle both keys
+            item_id = item.get('item_id') or item.get('id')
             cursor.execute("""
                 INSERT INTO order_item (order_id, item_id, quantity)
                 VALUES (%s, %s, %s)
@@ -332,14 +329,81 @@ def payment():
         connection.commit()
         connection.close()
 
-        # Clear the cart
-        session['cart_items'] = []
+        session['cart_items'] = []  # Clear cart only after successful order
 
         flash("Order placed successfully!", "success")
         return redirect(url_for('customer.menu'))
 
     connection.close()
     return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user)
+
+
+@customer.route('/MyOrders', methods=['GET', 'POST'])
+def myorder():
+    return  render_template("myorder.html")
+
+
+@customer.route('/api/myorders', methods=['GET'])
+def my_orders():
+    connection = connect_db()
+    cursor = connection.cursor(dictionary=True)
+
+    query = """
+        SELECT 
+        o.order_id,
+        c.name AS customer_name,
+        o.total_amount,
+        o.order_date,
+        o.order_status,
+        o.payment_ss,
+        i.item_name,
+        oi.quantity
+    FROM orders o
+    LEFT JOIN customer c ON o.customer_id = c.customer_id
+    LEFT JOIN order_item oi ON o.order_id = oi.order_id
+    LEFT JOIN items i ON oi.item_id = i.item_id
+    ORDER BY o.order_date DESC;
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+
+    orders_dict = {}
+
+    if result:
+        for row in result:
+            order_id = row['order_id']
+            # Convert the LONG BLOB payment_ss to base64 if it's not None
+            payment_ss_base64 = None
+            if row['payment_ss']:
+                payment_ss_base64 = base64.b64encode(row['payment_ss']).decode('utf-8')
+
+            if order_id not in orders_dict:
+                orders_dict[order_id] = {
+                    "order_id": order_id,
+                    "name": row["customer_name"],
+                    "total_amount": row["total_amount"],
+                    "order_date": row["order_date"],
+                    "status": row["order_status"],
+                    "payment_ss": payment_ss_base64,  # Add the base64-encoded image
+                    "items": []
+                }
+            if row["item_name"]:
+                orders_dict[order_id]["items"].append({"name": row["item_name"], "quantity": row["quantity"]})
+
+    connection.close()
+
+    return jsonify(list(orders_dict.values()))
+
+@customer.route('/api/myorders/<int:order_id>', methods=['PUT'])
+def update_order_status(order_id):
+    connection = connect_db()
+    cursor = connection.cursor()
+    cursor.execute("UPDATE orders SET order_status = %s WHERE order_id = %s", ('Completed', order_id))
+    connection.commit()
+    connection.close()
+    return jsonify({'message': 'Order status updated successfully'}), 200
+
+
 
 @customer.route('/Account')
 def account():
@@ -353,4 +417,3 @@ def account():
     connection.close()
 
     return render_template("account.html", data=data)
-
