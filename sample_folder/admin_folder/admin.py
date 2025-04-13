@@ -254,49 +254,52 @@ def get_orders():
 
     query = """
         SELECT 
-        o.order_id,
-        c.name AS customer_name,
-        o.total_amount,
-        o.order_date,
-        o.order_status,
-        o.payment_ss,
-        i.item_name,
-        oi.quantity
-    FROM orders o
-    LEFT JOIN customer c ON o.customer_id = c.customer_id
-    LEFT JOIN order_item oi ON o.order_id = oi.order_id
-    LEFT JOIN items i ON oi.item_id = i.item_id
-    ORDER BY o.order_date DESC;
+            o.order_id,
+            o.total_amount,
+            o.order_date,
+            o.order_status,
+            o.payment_ss,
+            c.name AS customer_name,
+            c.contact AS customer_contact,
+            c.address AS customer_address,
+            i.item_name,
+            o.quantity
+        FROM orders o
+        LEFT JOIN customer c ON o.customer_id = c.customer_id
+        LEFT JOIN items i ON o.item_id = i.item_id
+        ORDER BY o.order_date DESC;
     """
     cursor.execute(query)
     result = cursor.fetchall()
 
     orders_dict = {}
 
-    if result:
-        for row in result:
-            order_id = row['order_id']
-            # Convert the LONG BLOB payment_ss to base64 if it's not None
-            payment_ss_base64 = None
-            if row['payment_ss']:
-                payment_ss_base64 = base64.b64encode(row['payment_ss']).decode('utf-8')
+    for row in result:
+        order_id = row['order_id']
+        payment_ss_base64 = base64.b64encode(row['payment_ss']).decode('utf-8') if row['payment_ss'] else None
 
-            if order_id not in orders_dict:
-                orders_dict[order_id] = {
-                    "order_id": order_id,
-                    "name": row["customer_name"],
-                    "total_amount": row["total_amount"],
-                    "order_date": row["order_date"],
-                    "status": row["order_status"],
-                    "payment_ss": payment_ss_base64,  # Add the base64-encoded image
-                    "items": []
-                }
-            if row["item_name"]:
-                orders_dict[order_id]["items"].append({"name": row["item_name"], "quantity": row["quantity"]})
+        if order_id not in orders_dict:
+            orders_dict[order_id] = {
+                "order_id": order_id,
+                "name": row["customer_name"],
+                "contact": row["customer_contact"],
+                "address": row["customer_address"],
+                "total_amount": row["total_amount"],
+                "order_date": row["order_date"].strftime('%a, %d %b %Y %H:%M:%S GMT') if row["order_date"] else "N/A",
+                "status": row["order_status"],
+                "payment_ss": payment_ss_base64,
+                "items": []
+            }
+
+        if row["item_name"]:
+            orders_dict[order_id]["items"].append({
+                "name": row["item_name"],
+                "quantity": row["quantity"]
+            })
 
     connection.close()
-
     return jsonify(list(orders_dict.values()))
+
 
 @admin.route('/api/orders/<int:order_id>', methods=['DELETE'])
 def delete_order(order_id):

@@ -312,29 +312,35 @@ def payment():
 
         payment_ss = payment_file.read()
 
-        cursor.execute("""
-            INSERT INTO orders (customer_id, total_amount, order_status, payment_ss)
-            VALUES (%s, %s, %s, %s)
-        """, (user['customer_id'], total_amount, 'Pending', payment_ss))
-        order_id = cursor.lastrowid
-
+        # ✅ Insert each item in cart as a separate order row
         for item in cart_items:
             item_id = item.get('item_id') or item.get('id')
+            quantity = item['quantity']
+
             cursor.execute("""
-                INSERT INTO order_item (order_id, item_id, quantity)
-                VALUES (%s, %s, %s)
-            """, (order_id, item_id, item['quantity']))
+                INSERT INTO orders (customer_id, item_id, quantity, total_amount, order_status, payment_ss)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (
+                user['customer_id'],
+                item_id,
+                quantity,
+                total_amount,
+                'Pending',
+                payment_ss
+            ))
 
         connection.commit()
         connection.close()
 
-        session['cart_items'] = [] 
+        session['cart_items'] = []
 
         flash("Order placed successfully!", "success")
-        return redirect(url_for('customer.myorder', highlight_order_id=order_id))
+        return redirect(url_for('customer.myorder'))
 
     connection.close()
     return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user)
+
+
 
 
 @customer.route('/MyOrders', methods=['GET'])
@@ -357,11 +363,10 @@ def my_orders():
         o.order_status,
         o.payment_ss,
         i.item_name,
-        oi.quantity
+        o.quantity
     FROM orders o
     LEFT JOIN customer c ON o.customer_id = c.customer_id
-    LEFT JOIN order_item oi ON o.order_id = oi.order_id
-    LEFT JOIN items i ON oi.item_id = i.item_id
+    LEFT JOIN items i ON o.item_id = i.item_id
     ORDER BY o.order_date DESC;
     """
     cursor.execute(query)
