@@ -1,5 +1,5 @@
 import base64
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, make_response
 import mysql.connector
 from flask_bcrypt import Bcrypt
 
@@ -8,10 +8,16 @@ bcrypt = Bcrypt()
 
 db_config = {
     'host': 'localhost',
-    'database': 'onlinefood',
+    'database': 'foodordering',
     'user': 'root',
     'password': '',
 }
+
+def make_header(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 def connect_db():
     return mysql.connector.connect(**db_config)
@@ -22,61 +28,80 @@ def b64encode_filter(data):
 
 @admin.route('/')
 def index():
+    if 'user' not in session:
+        return redirect(url_for('admin.login'))
+
     connection = connect_db()
     cursor = connection.cursor()
-
-    # Fetch total sales from orders
+    
     cursor.execute("SELECT SUM(total_amount) FROM orders")
-    total_sales = cursor.fetchone()[0] or 0  # If NULL, set to 0
+    total_sales = cursor.fetchone()[0] or 0 
 
-    # Fetch total number of customers
     cursor.execute("SELECT COUNT(*) FROM customer")
     total_customers = cursor.fetchone()[0]
 
+    cursor.close()
     connection.close()
 
-    return render_template(
+    response = make_response(render_template(
         'admin_index.html',
         total_sales=total_sales,
         total_customers=total_customers,
-    )
+    ))
+    return response
+
 
 @admin.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == "POST":
-        email = request.form.get("email", "").strip()
-        password = request.form.get("password", "").strip()
+    if 'user' in session:
+        return redirect(url_for('admin.index'))
 
-        # Connect to the database to check for user credentials
-        conn = connect_db()
-        cursor = conn.cursor(dictionary=True)
+    emailmsg = ''
+    passwordmsg = ''
+    msg = ''
+    
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        if email != 'admin123@gmail.com':
+            emailmsg = 'Email is incorrect!'
 
-        # Query to fetch the admin user based on email
-        cursor.execute("SELECT * FROM admin WHERE email = %s", (email,))
-        user = cursor.fetchone()
-        cursor.close()
-        conn.close()
+        if password != 'admin':
+            passwordmsg = 'Password is incorrect!'
 
-        # Check if the user exists and if the password matches the hashed one
-        if user and bcrypt.check_password_hash(user['password'], password):
-            session["user"] = user['email']
-            flash("Login successful!", "success")
-            return redirect(url_for("admin.index"))
+        if not emailmsg and not passwordmsg:
+            try:
+                connection = mysql.connector.connect(**db_config)
+                cursor = connection.cursor()
+                cursor.execute("INSERT INTO admin (email, password) VALUES(%s, %s)", (email, password))
+                connection.commit()
+                session['user'] = email
+                return redirect(url_for('admin.index'))
+            except mysql.connector.Error as e:
+                msg = f"Adding data failed! Error: {str(e)}"
+            finally:
+                cursor.close()
+                connection.close()
+        else:
+            msg = emailmsg or passwordmsg
 
-        flash("Invalid credentials.", "danger")
-
-    return render_template("admin_login.html")
-
+    response = make_response(render_template('admin_login.html', msg=msg, emailmsg=emailmsg, passwordmsg=passwordmsg))
+    return make_header(response)
 
     
-@admin.route("/logout")
-def logout():
-    session.pop("user", None)
-    flash("Logged out successfully!", "success")
-    return redirect(url_for("admin.login"))
+@admin.route('/logout')
+def adminlogout():
+    session.pop('user', None)
+    response = make_response(redirect(url_for('admin.login')))
+    response = make_header(response)
+    return response
 
 @admin.route('/Manage-Item', methods=['GET', 'POST'])
 def manageitem():
+    
+    if 'user' not in session:
+        return redirect(url_for('admin.login'))
+    
     if request.method == "POST":
         name = request.form.get('name')
         price = request.form.get('price')
@@ -125,7 +150,8 @@ def manageitem():
         processed_items = []
         flash(f"Error fetching items: {str(e)}", "danger")
 
-    return render_template("manage_item.html", items=processed_items)
+    response = make_response(render_template("manage_item.html", items=processed_items))
+    return response
 
 @admin.route('/delete/<int:item_id>', methods=['GET'])
 def delete_item(item_id):
@@ -205,6 +231,9 @@ def edit_item(item_id):
 
 @admin.route('/Manage-User', methods=['GET'])
 def users():
+    if 'user' not in session:
+        return redirect(url_for('admin.login'))
+
     try:
         connection = connect_db()
         cursor = connection.cursor(dictionary=True)
@@ -220,6 +249,9 @@ def users():
 
 @admin.route('/Manage-Categories', methods=['GET', 'POST'])
 def categories():
+    if 'user' not in session:
+        return redirect(url_for('admin.login'))
+
     connection = connect_db()
     cursor = connection.cursor()
 
@@ -245,10 +277,17 @@ def categories():
 
 @admin.route('/Manage-Orders')
 def manageorders():
+    if 'user' not in session:
+        return redirect(url_for('admin.login'))
+
     return render_template("manage_order.html")
+
 
 @admin.route('/api/orders', methods=['GET'])
 def get_orders():
+    if 'user' not in session:
+        return redirect(url_for('admin.login'))
+
     connection = connect_db()
     cursor = connection.cursor(dictionary=True)
 
@@ -299,6 +338,7 @@ def get_orders():
 
     connection.close()
     return jsonify(list(orders_dict.values()))
+
 
 
 @admin.route('/api/orders/<int:order_id>', methods=['DELETE'])

@@ -83,18 +83,25 @@
     <div class="content-wrapper">
         <div class="col-md-8 mx-auto mt-4">
             <div class="cart-container">
-                <form id="orderForm">
+                <form id="orderForm" method="POST">
                     {% for item in cart_items %}
-                    <div class="cart-item" data-item-id="{{ item.item_id }}" data-name="{{ item.name }}" data-price="{{ item.price }}" data-quantity="{{ item.quantity }}" data-image="{{ item.image_url }}">
-                        <div class="item-info">
-                            {% if item.image_url.startswith('data:image') %}
-                                <img class="item-image" src="{{ item.image_url }}" alt="{{ item.name }}">
-                            {% else %}
-                                <img class="item-image" src="data:image/jpeg;base64,{{ item.image_url }}" alt="{{ item.name }}">
-                            {% endif %}
-                            <p>{{ item.name }} - {{ item.quantity }} x ₱{{ item.price }}</p>
+                        <div class="cart-item" data-item-id="{{ item.item_id }}" data-name="{{ item.name }}" data-price="{{ item.price }}" data-quantity="{{ item.quantity }}" data-image="{{ item.image_url }}">
+                            <div class="item-info">
+                                {% if item.image_url.startswith('data:image') %}
+                                    <img class="item-image" src="{{ item.image_url }}" alt="{{ item.name }}">
+                                {% else %}
+                                    <img class="item-image" src="data:image/jpeg;base64,{{ item.image_url }}" alt="{{ item.name }}">
+                                {% endif %}
+                                <p>{{ item.name }} - {{ item.quantity }} x ₱{{ item.price }}</p>
+                            </div>
+                            <!-- Remove Item Button -->
+                            <form action="{{ url_for('customer.orders') }}" method="POST" class="d-inline">
+                                <input type="hidden" name="remove_item" value="{{ item.item_id }}">
+                                <button type="submit" class="btn-remove">
+                                    <i class="fas fa-trash-alt"></i> Remove
+                                </button>
+                            </form>
                         </div>
-                    </div>
                     {% endfor %}
                     <div class="border-top pt-2">
                         <p class="total-amount">Total Amount: ₱{{ total_amount }}</p>
@@ -107,18 +114,14 @@
 </div>
 
 <script>
-    // Update Total (optional, can be enhanced to re-calculate after removing items)
-    function updateTotal() {
-        let totalAmount = 0;
-        const items = document.querySelectorAll('.cart-item');
-
-        items.forEach(item => {
-            const price = parseFloat(item.dataset.price);
-            const quantity = parseInt(item.dataset.quantity);
-            totalAmount += price * quantity;
-        });
-
-        document.querySelector('.total-amount').textContent = `Total Amount: ₱${totalAmount.toFixed(2)}`;
+    // Remove Item
+    function removeItem(itemId) {
+        let cartItems = JSON.parse(sessionStorage.getItem('cart_items')) || [];
+        cartItems = cartItems.filter(item => item.item_id !== itemId);
+        sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
+        
+        // Reload the page to reflect the changes in cart
+        location.reload();
     }
 
     // Proceed to Payment Click

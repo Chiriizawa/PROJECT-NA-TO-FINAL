@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 let row = `<tr>
                     <td>${order.name}</td>
                     <td>${order.items.map(item => item.name).join("<br>")}</td>
-                    <td>${order.items.map(item => "x" + item.quantity).join("<br>")}</td>
+                    <td>${order.items.map(item => + item.quantity).join("<br>")}</td>
                     <td>₱${order.total_amount}</td>
                     <td>${order.order_date}</td>
                     <td>${order.status}</td>
@@ -137,7 +137,7 @@ function showOrderDetails(index) {
 
     order.items.forEach(item => {
         let li = document.createElement("li");
-        li.innerText = `${item.name} (x${item.quantity})`;
+        li.innerText = `${item.name} (${item.quantity})`;
         itemsList.appendChild(li);
     });
 

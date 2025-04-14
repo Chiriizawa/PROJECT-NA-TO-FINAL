@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, render_template, request, flash, session, redirect, url_for, current_app, jsonify
+from flask import Flask, Blueprint, render_template, request, flash, session, redirect, url_for, current_app, jsonify, make_response
 import mysql.connector
 import base64
 import re
@@ -11,11 +11,15 @@ customer = Blueprint('customer', __name__, template_folder="template")
 
 bcrypt = Bcrypt()
 
-
+def make_header(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, proxy-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 db_config = {
     'host':'localhost',
-    'database':'onlinefood',
+    'database':'foodordering',
     'user':'root',
     'password':'',
 }
@@ -33,6 +37,7 @@ def b64encode_filter(data):
 
 @customer.route('/')
 def index():
+
     connection = connect_db()
     cursor = connection.cursor()
     cursor.execute("SELECT item_id, item_name, price, image FROM items")
@@ -50,8 +55,12 @@ def index():
 
     return render_template('index.html', items=formatted_items)
 
+
 @customer.route('/login', methods=['GET', 'POST'])
 def login():
+    if 'user' in session:  # Check if the user is already logged in
+        return redirect(url_for('customer.index'))  
+
     email_error = None
     password_error = None
 
@@ -86,7 +95,8 @@ def login():
                 else:
                     flash("Failed to send verification email. Please try again.", "danger")
 
-    return render_template("customerlogin.html", email_error=email_error, password_error=password_error)
+    response = make_response(render_template("customerlogin.html", email_error=email_error, password_error=password_error))
+    return response
 
 
 def send_verification_email(email, code):
@@ -111,6 +121,11 @@ def send_verification_email(email, code):
     
 @customer.route("/Verify-Account", methods=['GET', 'POST'])
 def verify():
+    if "user" in session:
+        return redirect(url_for('customer.index'))
+    if "verification_code" not in session or "temp_user_id" not in session:
+        return redirect(url_for('customer.login'))
+
     if request.method == "POST":
         entered_code = "".join([
             request.form.get("code1", ""), request.form.get("code2", ""),
@@ -125,9 +140,13 @@ def verify():
         else:
             flash("Invalid verification code.", "danger")
 
-    return render_template("verify.html")
+    response = make_response(render_template("verify.html"))
+    return response
+
+
+
 @customer.route("/logout")
-def logout():
+def customerlogout():
     session.pop("user", None)
     return redirect(url_for("customer.index"))
 
@@ -312,7 +331,6 @@ def payment():
 
         payment_ss = payment_file.read()
 
-        # ✅ Insert each item in cart as a separate order row
         for item in cart_items:
             item_id = item.get('item_id') or item.get('id')
             quantity = item['quantity']
@@ -339,9 +357,6 @@ def payment():
 
     connection.close()
     return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user)
-
-
-
 
 @customer.route('/MyOrders', methods=['GET'])
 def myorder():
@@ -391,24 +406,15 @@ def my_orders():
                     "payment_ss": payment_ss_base64,
                     "items": []
                 }
-            if row["item_name"]:
-                orders_dict[order_id]["items"].append({"name": row["item_name"], "quantity": row["quantity"]})
 
+            if row["item_name"]:
+                orders_dict[order_id]["items"].append({
+                    "name": row["item_name"],
+                    "quantity": row["quantity"]
+                })
     connection.close()
 
     return jsonify(list(orders_dict.values()))
-
-
-@customer.route('/api/myorders/<int:order_id>', methods=['PUT'])
-def update_order_status(order_id):
-    connection = connect_db()
-    cursor = connection.cursor()
-    cursor.execute("UPDATE orders SET order_status = %s WHERE order_id = %s", ('Completed', order_id))
-    connection.commit()
-    connection.close()
-    return jsonify({'message': 'Order status updated successfully'}), 200
-
-
 
 @customer.route('/Account')
 def account():

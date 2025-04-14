@@ -17,7 +17,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Items</th>
-                        <th>Qty</th>
+                        <th>Quantity</th>
                         <th>Total Amount</th>
                         <th>Date</th>
                         <th>Status</th>
@@ -73,7 +73,7 @@ function updateOrderTable() {
         let row = `<tr onclick="showOrderDetails(${index})" style="cursor:pointer;">
             <td>${order.name}</td>
             <td>${order.items.map(item => item.name).join("<br>")}</td>
-            <td>${order.items.map(item => "x" + item.quantity).join("<br>")}</td>
+            <td>${order.items.map(item => + item.quantity).join("<br>")}</td>
             <td>₱${order.total_amount}</td>
             <td>${order.order_date}</td>
             <td>${order.status}</td>
@@ -94,7 +94,7 @@ function showOrderDetails(index) {
     const itemsList = document.getElementById("modalItems");
     itemsList.innerHTML = "";
     order.items.forEach(item => {
-        itemsList.innerHTML += `<li>${item.name} - x${item.quantity} - ₱${item.price}</li>`;
+        itemsList.innerHTML += `<li>${item.name} - ${item.quantity} - ₱${item.price}</li>`;
     });
 
     document.getElementById("modalPaymentScreenshot").src = order.payment_screenshot;

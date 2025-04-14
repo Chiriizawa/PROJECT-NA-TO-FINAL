@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 
-
 {% block head %}
     <title>Crave On - Menu</title>
     <link rel="stylesheet" href="{{ url_for('static', filename = 'css/customer/menu.css') }}">
@@ -9,11 +8,8 @@
 {% endblock %}
 
 {% block content %}
-
-
 <!-- Background Container -->
 <div class="bg-container">
-    <!-- Main Content Container -->
     <div class="container-fluid menu-container my-5">
         <div class="container mt-5">
             <div class="row">
@@ -25,7 +21,6 @@
                         {% else %}
                             <img src="#" class="card-img-top" alt="Default Image">
                         {% endif %}
-
                         <div class="card-body">
                             <h5 class="card-title">{{ item[1] }}</h5>
                             <div class="mb-2">
@@ -38,8 +33,7 @@
                                     onclick="addToCart('{{ item[1] }}', '{{ item[2] }}', 'data:image/jpeg;base64,{{ item[3] }}')">
                                     <i class="fas fa-plus me-1"></i> ADD
                                 </button>
-                        
-                                <!-- Buy Now Button in Menu Card -->
+                                <!-- Buy Now Button -->
                                 <button class="btn btn-success btn-sm px-3" 
                                     onclick="buyNow('{{ item[1] }}', '{{ item[2] }}', 'data:image/jpeg;base64,{{ item[3] }}')">
                                     <i class="fas fa-shopping-cart me-1"></i> BUY
@@ -56,12 +50,8 @@
     </div>
 
     <!-- Cart Section -->
-     
-        <div class="cart-container p-3 shadow-sm border-0" id="cart-container">
-        <!-- Minimize Button -->
+    <div class="cart-container p-3 shadow-sm border-0" id="cart-container">
         <button id="btn-minimize" class="btn-minimize" onclick="toggleCart()"><i class="fa-solid fa-compress"></i></button>
-        
-        <!-- Cart Content -->
         <div id="cart-content">
             <h5 class="fw-bold mb-3">Items</h5>
             <div id="cart-items">
@@ -71,209 +61,125 @@
                 <span class="fw-bold">Total</span>
                 <span class="fw-bold" id="total-amount">₱0</span>
             </div>
-        
-            <!-- Checkout Form with Hidden Inputs -->
             <form id="checkout-form" action="{{ url_for('customer.orders') }}" method="POST">
                 <div id="cart-inputs"></div>
                 <button type="submit" class="btn btn-success">Checkout</button>
             </form>
         </div>
-        
     </div>
 </div>
 
-<footer class="bg-dark text-light py-4 mx-auto w-full" id="footer">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-3">
-                <h4 class="fw-bold text-light">Crave On</h4>
-                <p class="text-light">Cravings mo, Craving ko, Crave On</p>
-                <div class="social-icons d-flex align-items-center mt-2">
-                    <a href="https://www.facebook.com" target="_blank" class="text-light fs-3 me-3"><i
-                            class="fa-brands fa-facebook"></i></a>
-                    <a href="https://www.instagram.com" target="_blank" class="text-light fs-3"><i
-                            class="fa-brands fa-instagram"></i></a>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <h5 class="fw-bold">Contact Us</h5>
-                <p><i class="bi bi-telephone-fill text-warning"></i> 1123303012</p>
-                <p><i class="bi bi-globe text-warning"></i> CraveOn.com</p>
-                <p><i class="bi bi-envelope-fill text-warning"></i> @CraveOncom</p>
-                <p><i class="bi bi-geo-alt-fill text-warning"></i> minsan sa kanto minsan sa tabi</p>
-            </div>
-        </div>
-    </div>
-</footer>
-
 <script>
-    // Load cart from localStorage or initialize empty cart
-let cart = loadCartFromLocalStorage() || {};
+    let cart = loadCartFromLocalStorage() || {};
 
-// Function to load cart from localStorage
-function loadCartFromLocalStorage() {
-    const cartData = localStorage.getItem("cart");
-    return cartData ? JSON.parse(cartData) : {};
-}
-
-// Function to save cart to localStorage
-function saveCartToLocalStorage() {
-    localStorage.setItem("cart", JSON.stringify(cart));
-}
-
-// Function to toggle cart visibility
-function toggleCart() {
-    var cartContent = document.getElementById("cart-content");
-    var cartContainer = document.querySelector(".cart-container");
-
-    if (cartContent.style.display === "none") {
-        cartContent.style.display = "block"; // Show cart
-        cartContainer.style.height = "auto"; // Reset height
-    } else {
-        cartContent.style.display = "none"; // Hide cart
-        cartContainer.style.height = "40px"; // Set minimized height
-    }
-}
-
-// Function to add items to cart
-function addToCart(name, price, image) {
-    if (cart[name]) {
-        cart[name].quantity += 1; // Increase quantity
-    } else {
-        cart[name] = { price, quantity: 1, image };
+    function loadCartFromLocalStorage() {
+        const cartData = localStorage.getItem("cart");
+        return cartData ? JSON.parse(cartData) : {};
     }
 
-    saveCartToLocalStorage(); // Save updated cart
-    renderCart(); // Update cart display
-}
+    function saveCartToLocalStorage() {
+        localStorage.setItem("cart", JSON.stringify(cart));
+    }
 
-// Function to remove items from cart
-function removeFromCart(name) {
-    if (cart[name]) {
-        if (cart[name].quantity > 1) {
-            cart[name].quantity -= 1;
+    function toggleCart() {
+        var cartContent = document.getElementById("cart-content");
+        var cartContainer = document.querySelector(".cart-container");
+        if (cartContent.style.display === "none") {
+            cartContent.style.display = "block"; 
+            cartContainer.style.height = "auto";
         } else {
-            delete cart[name];
+            cartContent.style.display = "none"; 
+            cartContainer.style.height = "40px"; 
         }
     }
-    saveCartToLocalStorage(); // Save updated cart
-    renderCart(); // Update cart display
-}
 
-// Function to update quantity when typed manually
-function updateQuantity(name, newQuantity) {
-    let quantity = parseInt(newQuantity);
-    if (quantity > 0) {
-        cart[name].quantity = quantity; // Update quantity
-    } else {
-        delete cart[name]; // Remove item if quantity is 0
-    }
-    saveCartToLocalStorage(); // Save updated cart
-    renderCart(); // Update cart display
-}
-
-// Function to clear the entire cart
-function clearCart() {
-    cart = {}; // Reset cart to empty object
-    saveCartToLocalStorage(); // Save empty cart
-    renderCart(); // Re-render cart
-}
-
-// Function to render cart
-function renderCart() {
-    const cartItems = document.getElementById("cart-items");
-    cartItems.innerHTML = "";
-    let subTotal = 0;
-
-    for (const [name, item] of Object.entries(cart)) {
-        subTotal += item.price * item.quantity;
-        cartItems.innerHTML += `
-            <div class="cart-item d-flex justify-content-between align-items-center mb-2">
-                <div class="d-flex align-items-center">
-                    <img src="${item.image}" alt="${name}" style="width: 40px; height: 40px; margin-right: 10px;">
-                    <span>${name}</span>
-                    <small class="ms-2">₱${item.price * item.quantity}.00</small>
-                </div>
-                <div class="d-flex align-items-center">
-                    <button class="btn btn-sm btn-outline-secondary" onclick="removeFromCart('${name}')">-</button>
-                    <input type="number" class="form-control text-center mx-1" style="width: 50px;" 
-                        value="${item.quantity}" onchange="updateQuantity('${name}', this.value)">
-                    <button class="btn btn-sm btn-outline-secondary me-3" onclick="addToCart('${name}', ${item.price}, '${item.image}')">+</button>
-                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteItem('${name}')">×</button>
-                </div>
-            </div>`;
+    function addToCart(name, price, image) {
+        if (cart[name]) {
+            cart[name].quantity += 1;
+        } else {
+            cart[name] = { price, quantity: 1, image };
+        }
+        saveCartToLocalStorage();
+        renderCart();
     }
 
-    document.getElementById("total-amount").textContent = `₱${subTotal}`;
+    function renderCart() {
+        const cartItems = document.getElementById("cart-items");
+        cartItems.innerHTML = "";
+        let subTotal = 0;
 
-    if (Object.keys(cart).length === 0) {
-        cartItems.innerHTML = `<p class="text-dark">Your cart is empty.</p>`;
+        for (const [name, item] of Object.entries(cart)) {
+            subTotal += item.price * item.quantity;
+            cartItems.innerHTML += `
+                <div class="cart-item d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex align-items-center">
+                        <img src="${item.image}" alt="${name}" style="width: 40px; height: 40px; margin-right: 10px;">
+                        <span>${name}</span>
+                        <small class="ms-2">₱${item.price * item.quantity}.00</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="removeFromCart('${name}')">-</button>
+                        <input type="number" class="form-control text-center mx-1" style="width: 50px;" 
+                            value="${item.quantity}" onchange="updateQuantity('${name}', this.value)">
+                        <button class="btn btn-sm btn-outline-secondary me-3" onclick="addToCart('${name}', ${item.price}, '${item.image}')">+</button>
+                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteItem('${name}')">×</button>
+                    </div>
+                </div>`;
+        }
+
+        document.getElementById("total-amount").textContent = `₱${subTotal}`;
+
+        if (Object.keys(cart).length === 0) {
+            cartItems.innerHTML = `<p class="text-dark">Your cart is empty.</p>`;
+        }
     }
-}
 
-// Function to delete an item from the cart
-function deleteItem(name) {
-    delete cart[name]; // Remove item
-    saveCartToLocalStorage(); // Save updated cart
-    renderCart(); // Re-render cart
-}
-
-// Function to update hidden inputs before submitting
-function updateCartForm() {
-    let cartInputs = document.getElementById("cart-inputs");
-    cartInputs.innerHTML = "";
-
-    let index = 0;
-    for (const [name, item] of Object.entries(cart)) {
-        cartInputs.innerHTML += `
-            <input type="hidden" name="item_name_${index}" value="${name}">
-            <input type="hidden" name="item_price_${index}" value="${item.price}">
-            <input type="hidden" name="item_quantity_${index}" value="${item.quantity}">
-            <input type="hidden" name="item_image_${index}" value="${item.image}">
-        `;
-        index++;
+    function deleteItem(name) {
+        delete cart[name];
+        saveCartToLocalStorage();
+        renderCart();
     }
-}
 
-// Clear cart on form submission after checkout
-document.getElementById("checkout-form").addEventListener("submit", function () {
-    updateCartForm(); // Update hidden inputs
-    clearCart(); // Clear cart after successful checkout
-    localStorage.removeItem("cart"); // Clear localStorage on checkout
-});
+    function updateCartForm() {
+        let cartInputs = document.getElementById("cart-inputs");
+        cartInputs.innerHTML = "";
 
-// Load and render cart on page load
-document.addEventListener("DOMContentLoaded", function () {
-    renderCart(); // Render cart with loaded data
-});
+        let index = 0;
+        for (const [name, item] of Object.entries(cart)) {
+            cartInputs.innerHTML += `
+                <input type="hidden" name="item_name_${index}" value="${name}">
+                <input type="hidden" name="item_price_${index}" value="${item.price}">
+                <input type="hidden" name="item_quantity_${index}" value="${item.quantity}">
+                <input type="hidden" name="item_image_${index}" value="${item.image}">`;
+            index++;
+        }
 
-// ----------------------
-// Buy Now Functionality
-// ----------------------
+        cartInputs.innerHTML += `<input type="hidden" name="cart_length" value="${index}">`;
+    }
 
-// Function to handle Buy Now action
-function buyNow(name, price, image) {
-    // Create a form to send the item to orders.html
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = "{{url_for('customer.orders')}}"; // Your orders route
+    document.getElementById("checkout-form").addEventListener("submit", function (e) {
+        updateCartForm();
+    });
 
-    // Add item data as hidden inputs
-    form.innerHTML = `
-        <input type="hidden" name="item_name_0" value="${name}">
-        <input type="hidden" name="item_price_0" value="${price}">
-        <input type="hidden" name="item_quantity_0" value="1">
-        <input type="hidden" name="item_image_0" value="${image}">
-    `;
+    document.addEventListener("DOMContentLoaded", function () {
+        renderCart();
+    });
 
-    document.body.appendChild(form);
-    form.submit(); // Submit the form to orders.html
-}
+    function buyNow(name, price, image) {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "{{url_for('customer.orders')}}";
 
-
-
+        form.innerHTML = `
+            <input type="hidden" name="item_name_0" value="${name}">
+            <input type="hidden" name="item_price_0" value="${price}">
+            <input type="hidden" name="item_quantity_0" value="1">
+            <input type="hidden" name="item_image_0" value="${image}">`;
+        document.body.appendChild(form);
+        form.submit();
+    }
 </script>
-    
+
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 <script src="{{url_for('static', filename = 'js/menu.js')}}"></script>
