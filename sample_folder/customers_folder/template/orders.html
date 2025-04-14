@@ -2,85 +2,15 @@
 
 {% block head %}
     <title>Crave On - Orders</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/customer/orders.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body {
-            background-color: #282c34;
-            margin: 0;
-            padding: 0;
-        }
-        .content-wrapper {
-            background-color: #333;
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 1200px;
-            margin: 40px auto;
-        }
-        .cart-container {
-            background-color: #444;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #555;
-            border-radius: 5px;
-        }
-        .cart-item .item-info {
-            display: flex;
-            align-items: center;
-        }
-        .cart-item img {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-right: 15px;
-            border: 1px solid #ccc;
-        }
-        .cart-item p {
-            margin: 0;
-            color: white;
-        }
-        .btn-remove {
-            background-color: transparent;
-            border: none;
-            color: red;
-            cursor: pointer;
-            font-size: 18px;
-        }
-        .btn-remove:hover {
-            color: #ff4d4d;
-        }
-        .total-amount {
-            color: white;
-            font-weight: bold;
-        }
-        .btn-order {
-            background-color: #28a745;
-            color: white;
-            width: 100%;
-            margin-top: 15px;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .btn-order:hover {
-            background-color: #218838;
-        }
-    </style>
+ 
 {% endblock %}
 
 {% block content %}
-<div class="wrapper">
-    <div class="content-wrapper">
+<div class="bg-container">
+    
         <div class="col-md-8 mx-auto mt-4">
             <div class="cart-container">
                 <form id="orderForm" method="POST">
