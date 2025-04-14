@@ -365,8 +365,6 @@ def delete_order(order_id):
         print(f"Error deleting order: {e}")  # Debugging log
         return jsonify({"error": str(e)}), 500
 
-
-
 @admin.route('/api/orders/<int:order_id>', methods=['PUT'])
 def update_order_status(order_id):
     conn = connect_db()
@@ -390,3 +388,24 @@ def update_order_status(order_id):
     conn.close()
 
     return jsonify({'message': 'Order status updated to Approved'}), 200
+
+@admin.route('/api/orders/<int:order_id>', methods=['DELETE'])
+def cancel_order(order_id):
+    conn = connect_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE orders 
+        SET order_status = 'Cancelled' 
+        WHERE order_id = %s AND order_status = 'Pending'
+    """, (order_id,))
+
+    conn.commit()
+    
+    if cursor.rowcount == 0:
+        return jsonify({'message': 'Order not found or cannot be canceled (not in Pending status)'}), 404
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({'message': 'Order status updated to Cancelled'}), 200

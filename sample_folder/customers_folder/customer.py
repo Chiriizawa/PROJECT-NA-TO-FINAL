@@ -126,6 +126,8 @@ def verify():
     if "verification_code" not in session or "temp_user_id" not in session:
         return redirect(url_for('customer.login'))
 
+    error_message = None  # Variable to hold error message
+
     if request.method == "POST":
         entered_code = "".join([
             request.form.get("code1", ""), request.form.get("code2", ""),
@@ -138,9 +140,9 @@ def verify():
             session.pop("verification_code", None)  
             return redirect(url_for("customer.index"))
         else:
-            flash("Invalid verification code.", "danger")
+            error_message = "Invalid verification code."
 
-    response = make_response(render_template("verify.html"))
+    response = make_response(render_template("verify.html", error_message=error_message))
     return response
 
 

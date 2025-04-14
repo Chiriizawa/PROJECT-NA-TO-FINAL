@@ -49,6 +49,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-success" data-bs-dismiss="modal">Accept</button>
+                <button type="button" class="btn btn-danger" id="cancelOrderBtn" data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>
@@ -155,6 +156,12 @@ function showOrderDetails(index) {
     acceptButton.onclick = function () {
         updateOrderStatus(order.order_id); // Update the order status to "Approved"
     };
+
+    // Set up the Cancel button to cancel the order
+    const cancelButton = document.querySelector("#cancelOrderBtn");
+    cancelButton.onclick = function () {
+        cancelOrder(order.order_id); // Update the order status to "Canceled"
+    };
 }
 
 // Function to update the order status to "Approved"
@@ -176,6 +183,34 @@ function updateOrderStatus(orderId) {
     .catch(error => {
         console.error("Error updating order status:", error);
         alert("Failed to update the order status. Please try again.");
+    });
+}
+
+// Function to cancel the order
+function cancelOrder(orderId) {
+    fetch(`/Admin/api/orders/${orderId}`, {
+        method: 'DELETE'
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.message || 'Failed to cancel order');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Update status in local data
+        let order = window.ordersData.find(order => order.order_id === orderId);
+        if (order) {
+            order.status = 'Cancelled';
+            updateOrderTable();
+        }
+        alert("Order cancelled successfully!");
+    })
+    .catch(error => {
+        console.error("Error canceling order:", error);
+        alert("Failed to cancel the order. Please try again.");
     });
 }
 
@@ -232,8 +267,6 @@ function confirmDelete(orderId) {
         });
     };
 }
-
-
 </script>
 
 {% endblock %}

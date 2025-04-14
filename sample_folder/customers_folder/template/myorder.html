@@ -62,7 +62,7 @@
 fetch('/CraveOn/api/myorders')
     .then(response => response.json())
     .then(data => {
-        window.ordersData = data; // Make accessible to other functions
+        window.ordersData = data;
         updateOrderTable();
     });
 

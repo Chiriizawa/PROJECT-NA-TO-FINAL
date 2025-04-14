@@ -78,15 +78,21 @@
                 <!-- Contact Input -->
                 <div class="mb-3">
                     <label for="contact" class="form-label text-white">Contact Number</label>
-                    <input type="text" class="form-control {% if errors.get('contact') %}is-invalid{% endif %}" 
-                        id="contact" name="contact" placeholder="Enter your contact number" 
-                        value="{{ request.form.get('contact', '') }}">
+                    <div class="input-group">
+                        <span class="input-group-text">PH</span>
+                        <input type="text" class="form-control {% if errors.get('contact') %}is-invalid{% endif %}" 
+                            id="contact" name="contact" placeholder="Enter your contact number" 
+                            value="{{ request.form.get('contact', '') }}"
+                            pattern="^(09\d{9}|\+639\d{9})$"
+                            title="Enter a valid Philippine mobile number (e.g. 09171234567 or +639171234567)">
+                    </div>
                     {% if errors.get('contact') %}
                     <div class="invalid-feedback d-block">
                         {{ errors['contact'] }}
                     </div>
                     {% endif %}
                 </div>
+                
 
                 <!-- Address Input -->
                 <div class="mb-3">
