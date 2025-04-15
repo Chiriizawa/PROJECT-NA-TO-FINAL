@@ -58,7 +58,7 @@ def index():
 
 @customer.route('/login', methods=['GET', 'POST'])
 def login():
-    if 'user' in session:  # Check if the user is already logged in
+    if 'user' in session:
         return redirect(url_for('customer.index'))  
 
     email_error = None
@@ -74,7 +74,7 @@ def login():
             password_error = "Password is required."
         else:
             conn = connect_db()
-            cursor = conn.cursor(dictionary=True)  # Fetch as dict
+            cursor = conn.cursor(dictionary=True)
             cursor.execute("SELECT * FROM customer WHERE email = %s", (email,))
             user = cursor.fetchone()
             cursor.close()
@@ -85,11 +85,9 @@ def login():
             elif not bcrypt.check_password_hash(user['password'], password):
                 password_error = "Incorrect password. Please try again."
             else:
-                # Store temporary session data for verification
                 session["temp_user_id"] = user['customer_id']
                 session["verification_code"] = str(random.randint(100000, 999999))
 
-                # Send verification email
                 if send_verification_email(email, session["verification_code"]):
                     return redirect(url_for("customer.verify"))
                 else:
@@ -126,7 +124,7 @@ def verify():
     if "verification_code" not in session or "temp_user_id" not in session:
         return redirect(url_for('customer.login'))
 
-    error_message = None  # Variable to hold error message
+    error_message = None
 
     if request.method == "POST":
         entered_code = "".join([
@@ -289,7 +287,7 @@ def orders():
 
             item_index += 1
 
-        # Store updated cart in session
+        
         session['cart_items'] = cart_items
 
     total_amount = sum(item['price'] * item['quantity'] for item in cart_items)

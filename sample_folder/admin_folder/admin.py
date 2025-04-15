@@ -407,5 +407,4 @@ def cancel_order(order_id):
 
     cursor.close()
     conn.close()
-
     return jsonify({'message': 'Order status updated to Cancelled'}), 200
