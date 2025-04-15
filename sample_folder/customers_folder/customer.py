@@ -19,7 +19,7 @@ def make_header(response):
 
 db_config = {
     'host':'localhost',
-    'database':'foodordering',
+    'database':'onlinefood',
     'user':'root',
     'password':'',
 }
