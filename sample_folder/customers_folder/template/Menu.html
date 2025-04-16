@@ -140,6 +140,17 @@
         renderCart();
     }
 
+    function updateQuantity(name, quantity) {
+        const qty = parseInt(quantity);
+        if (qty <= 0) {
+            deleteItem(name);
+        } else {
+            cart[name].quantity = qty;
+        }
+        saveCartToLocalStorage();
+        renderCart();
+    }
+
     function updateCartForm() {
         let cartInputs = document.getElementById("cart-inputs");
         cartInputs.innerHTML = "";
@@ -157,8 +168,29 @@
         cartInputs.innerHTML += `<input type="hidden" name="cart_length" value="${index}">`;
     }
 
+    // ✅ Clear cart after form submission
     document.getElementById("checkout-form").addEventListener("submit", function (e) {
-        updateCartForm();
+        e.preventDefault(); // Prevent traditional form submit
+
+        const cartItems = [];
+        for (const [name, item] of Object.entries(cart)) {
+            cartItems.push({
+                name: name,
+                price: item.price,
+                quantity: item.quantity,
+                image_url: item.image
+            });
+        }
+
+        // Save cart items to sessionStorage
+        sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
+
+        // Optional: clear cart from memory/localStorage
+        cart = {};
+        saveCartToLocalStorage();
+
+        // Redirect to orders page
+        window.location.href = "{{ url_for('customer.orders') }}";
     });
 
     document.addEventListener("DOMContentLoaded", function () {

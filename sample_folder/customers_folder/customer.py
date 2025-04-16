@@ -19,7 +19,7 @@ def make_header(response):
 
 db_config = {
     'host':'localhost',
-    'database':'onlinefood',
+    'database':'foodordering',
     'user':'root',
     'password':'',
 }
@@ -54,7 +54,6 @@ def index():
         formatted_items.append((item_id, name, price, img_base64))
 
     return render_template('index.html', items=formatted_items)
-
 
 @customer.route('/login', methods=['GET', 'POST'])
 def login():
@@ -95,7 +94,6 @@ def login():
 
     response = make_response(render_template("customerlogin.html", email_error=email_error, password_error=password_error))
     return response
-
 
 def send_verification_email(email, code):
     try:
@@ -142,8 +140,6 @@ def verify():
 
     response = make_response(render_template("verify.html", error_message=error_message))
     return response
-
-
 
 @customer.route("/logout")
 def customerlogout():
@@ -238,7 +234,6 @@ def signup():
 
     return render_template("customersignup.html", errors={})
 
-
 @customer.route('/Menu')
 def menu():
     if 'user' not in session:
@@ -303,7 +298,6 @@ def orders():
 
     return render_template('orders.html', cart_items=cart_items, total_amount=total_amount, users=users)
 
-
 @customer.route('/Payment', methods=['GET', 'POST'])
 def payment():
     if 'user' not in session:
@@ -312,22 +306,27 @@ def payment():
     connection = connect_db()
     cursor = connection.cursor(dictionary=True)
 
-    cursor.execute("SELECT customer_id, name, email, contact, address FROM customer WHERE customer_id = %s", (session['user'],))
+    cursor.execute("SELECT customer_id, name, email, contact, address FROM customer WHERE customer_id = %s ORDER BY customer_id DESC LIMIT 1", (session['user'],))
     user = cursor.fetchone()
 
     cart_items = session.get('cart_items', [])
     total_amount = sum(item['price'] * item['quantity'] for item in cart_items)
 
+    message = None
+    message_type = None
+
     if not cart_items:
-        flash("Your cart is empty. Please add items.", "warning")
+        message = "Your cart is empty. Please add items."
+        message_type = "warning"
         connection.close()
-        return render_template('payment.html', cart_items=[], total_amount=0, user=user)
+        return render_template('payment.html', cart_items=[], total_amount=0, user=user, message=message, message_type=message_type)
 
     if request.method == 'POST':
         payment_file = request.files.get('payment_ss')
         if not payment_file or payment_file.filename == '':
-            flash("Payment screenshot is required.", "danger")
-            return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user)
+            message = "Payment screenshot is required."
+            message_type = "danger"
+            return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user, message=message, message_type=message_type)
 
         payment_ss = payment_file.read()
 
@@ -352,17 +351,15 @@ def payment():
 
         session['cart_items'] = []
 
-        flash("Order placed successfully!", "success")
-        return redirect(url_for('customer.myorder'))
+        return redirect(url_for('customer.myorder', message="Order placed successfully!", message_type="success"))
 
     connection.close()
-    return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user)
+    return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user, message=message, message_type=message_type)
 
 @customer.route('/MyOrders', methods=['GET'])
 def myorder():
     highlight_order_id = request.args.get('highlight_order_id')
     return render_template("myorder.html", highlight_order_id=highlight_order_id)
-
 
 @customer.route('/api/myorders', methods=['GET'])
 def my_orders():
@@ -415,6 +412,10 @@ def my_orders():
     connection.close()
 
     return jsonify(list(orders_dict.values()))
+
+@customer.route('/Thankyou')
+def thankyou():
+    return render_template("thankyou.html")
 
 @customer.route('/Account')
 def account():

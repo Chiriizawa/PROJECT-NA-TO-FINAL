@@ -188,29 +188,23 @@ function updateOrderStatus(orderId) {
 
 // Function to cancel the order
 function cancelOrder(orderId) {
-    fetch(`/Admin/api/orders/${orderId}`, {
-        method: 'DELETE'
+    fetch(`/Admin/api/cancelorders/${orderId}`, {
+        method: 'PUT',  // Use PUT method to update data
     })
     .then(response => {
         if (!response.ok) {
-            return response.json().then(err => {
-                throw new Error(err.message || 'Failed to cancel order');
-            });
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        return response.json();
-    })
-    .then(data => {
-        // Update status in local data
+        // Find the order in the data and update its status
         let order = window.ordersData.find(order => order.order_id === orderId);
         if (order) {
-            order.status = 'Cancelled';
-            updateOrderTable();
+            order.status = 'Cancelled';  // Update the order status to "Approved"
+            updateOrderTable();  // Refresh the table
         }
-        alert("Order cancelled successfully!");
     })
     .catch(error => {
-        console.error("Error canceling order:", error);
-        alert("Failed to cancel the order. Please try again.");
+        console.error("Error updating order status:", error);
+        alert("Failed to update the order status. Please try again.");
     });
 }
 
@@ -242,7 +236,7 @@ function updateOrderTable() {
 
 function confirmDelete(orderId) {
     document.getElementById('confirmDeleteBtn').onclick = function () {
-        fetch(`/Admin/api/orders/${orderId}`, {  // Ensure correct API endpoint
+        fetch(`/Admin/api/deleteorders/${orderId}`, {  // Ensure correct API endpoint
             method: 'DELETE',
         })
         .then(response => {

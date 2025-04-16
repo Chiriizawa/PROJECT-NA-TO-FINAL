@@ -2,77 +2,65 @@
 
 {% block head %}
     <title>Crave On - Orders</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/customer/orders.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/customer/orders.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
- 
 {% endblock %}
 
 {% block content %}
 <div class="bg-container">
-    
-        <div class="col-md-8 mx-auto mt-4">
-            <div class="cart-container">
-                <form id="orderForm" method="POST">
-                    {% for item in cart_items %}
-                        <div class="cart-item" data-item-id="{{ item.item_id }}" data-name="{{ item.name }}" data-price="{{ item.price }}" data-quantity="{{ item.quantity }}" data-image="{{ item.image_url }}">
-                            <div class="item-info">
-                                {% if item.image_url.startswith('data:image') %}
-                                    <img class="item-image" src="{{ item.image_url }}" alt="{{ item.name }}">
-                                {% else %}
-                                    <img class="item-image" src="data:image/jpeg;base64,{{ item.image_url }}" alt="{{ item.name }}">
-                                {% endif %}
-                                <p>{{ item.name }} - {{ item.quantity }} x ₱{{ item.price }}</p>
-                            </div>
-                            <!-- Remove Item Button -->
-                            <form action="{{ url_for('customer.orders') }}" method="POST" class="d-inline">
-                                <input type="hidden" name="remove_item" value="{{ item.item_id }}">
-                                <button type="submit" class="btn-remove">
-                                    <i class="fas fa-trash-alt"></i> Remove
-                                </button>
-                            </form>
-                        </div>
-                    {% endfor %}
-                    <div class="border-top pt-2">
-                        <p class="total-amount">Total Amount: ₱{{ total_amount }}</p>
-                        <button type="button" class="btn-order" id="proceedPaymentBtn">PROCEED TO PAYMENT</button>
-                    </div>                    
-                </form>
-            </div>
+    <div class="col-md-8 mx-auto mt-4">
+        <div class="cart-container">
+            <form id="orderForm" method="POST">
+                <div id="orderItemsContainer"></div>
+                <div class="border-top pt-2">
+                    <p class="total-amount" id="totalAmountText">Total Amount: ₱0</p>
+                    <button type="button" class="btn-order" id="proceedPaymentBtn">PROCEED TO PAYMENT</button>
+                </div>                    
+            </form>
         </div>
     </div>
 </div>
 
 <script>
-    // Remove Item
-    function removeItem(itemId) {
-        let cartItems = JSON.parse(sessionStorage.getItem('cart_items')) || [];
-        cartItems = cartItems.filter(item => item.item_id !== itemId);
-        sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
-        
-        // Reload the page to reflect the changes in cart
-        location.reload();
-    }
+    document.addEventListener("DOMContentLoaded", function () {
+        const container = document.getElementById("orderItemsContainer");
+        const totalAmountText = document.getElementById("totalAmountText");
 
-    // Proceed to Payment Click
-    document.getElementById('proceedPaymentBtn').addEventListener('click', function () {
-        const cartItems = [];
-        document.querySelectorAll('.cart-item').forEach(item => {
-            cartItems.push({
-                item_id: item.dataset.itemId,
-                name: item.dataset.name,
-                price: parseFloat(item.dataset.price),
-                quantity: parseInt(item.dataset.quantity),
-                image_url: item.dataset.image
-            });
-        });
+        // Load cart items from sessionStorage
+        const cartItems = JSON.parse(sessionStorage.getItem('cart_items')) || [];
+        let total = 0;
 
         if (cartItems.length === 0) {
-            alert("Your cart is empty!");
+            container.innerHTML = "<p>Your order is empty.</p>";
+        } else {
+            cartItems.forEach((item, index) => {
+                const subtotal = item.price * item.quantity;
+                total += subtotal;
+
+                container.innerHTML += `
+                    <div class="cart-item" data-index="${index}">
+                        <div class="item-info d-flex align-items-center mb-2">
+                            <img class="item-image me-2" src="${item.image_url}" alt="${item.name}" style="width: 60px; height: 60px;">
+                            <p>${item.name} - ${item.quantity} x ₱${item.price}</p>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        totalAmountText.textContent = `Total Amount: ₱${total}`;
+    });
+
+    // Proceed to payment
+    document.getElementById('proceedPaymentBtn').addEventListener('click', function () {
+        const cartItems = JSON.parse(sessionStorage.getItem('cart_items')) || [];
+
+        if (cartItems.length === 0) {
+            alert("Order is empty!");
             return;
         }
 
-        sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
+        // Redirect to the payment page without saving the order
         window.location.href = "{{ url_for('customer.payment') }}";
     });
 </script>

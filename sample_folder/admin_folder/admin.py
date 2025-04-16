@@ -8,7 +8,7 @@ bcrypt = Bcrypt()
 
 db_config = {
     'host': 'localhost',
-    'database': 'onlinefood',
+    'database': 'foodordering',
     'user': 'root',
     'password': '',
 }
@@ -50,7 +50,6 @@ def index():
     ))
     return response
 
-
 @admin.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user' in session:
@@ -88,7 +87,6 @@ def login():
     response = make_response(render_template('admin_login.html', msg=msg, emailmsg=emailmsg, passwordmsg=passwordmsg))
     return make_header(response)
 
-    
 @admin.route('/logout')
 def adminlogout():
     session.pop('user', None)
@@ -274,14 +272,12 @@ def categories():
 
     return render_template("categories.html", categories=category_list)
 
-
 @admin.route('/Manage-Orders')
 def manageorders():
     if 'user' not in session:
         return redirect(url_for('admin.login'))
 
     return render_template("manage_order.html")
-
 
 @admin.route('/api/orders', methods=['GET'])
 def get_orders():
@@ -339,15 +335,12 @@ def get_orders():
     connection.close()
     return jsonify(list(orders_dict.values()))
 
-
-
-@admin.route('/api/orders/<int:order_id>', methods=['DELETE'])
+@admin.route('/api/deleteorders/<int:order_id>', methods=['DELETE'])
 def delete_order(order_id):
     connection = connect_db()
     cursor = connection.cursor()
 
     try:
-        # Delete related items first (in case foreign key constraints)
         cursor.execute("DELETE FROM order_item WHERE order_id = %s", (order_id,))
         connection.commit()
 
@@ -362,7 +355,7 @@ def delete_order(order_id):
     except Exception as e:
         connection.rollback()
         connection.close()
-        print(f"Error deleting order: {e}")  # Debugging log
+        print(f"Error deleting order: {e}") 
         return jsonify({"error": str(e)}), 500
 
 @admin.route('/api/orders/<int:order_id>', methods=['PUT'])
@@ -370,17 +363,14 @@ def update_order_status(order_id):
     conn = connect_db()
     cursor = conn.cursor()
 
-    # Update the order status from 'Pending' to 'Approved'
     cursor.execute("""
         UPDATE orders 
         SET order_status = 'Approved' 
         WHERE order_id = %s AND order_status = 'Pending'
     """, (order_id,))
 
-    # Commit the changes
     conn.commit()
 
-    # Check if any rows were updated
     if cursor.rowcount == 0:
         return jsonify({'message': 'Order not found or already approved'}), 404
 
@@ -389,7 +379,7 @@ def update_order_status(order_id):
 
     return jsonify({'message': 'Order status updated to Approved'}), 200
 
-@admin.route('/api/orders/<int:order_id>', methods=['DELETE'])
+@admin.route('/api/cancelorders/<int:order_id>', methods=['PUT'])
 def cancel_order(order_id):
     conn = connect_db()
     cursor = conn.cursor()
