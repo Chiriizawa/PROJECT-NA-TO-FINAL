@@ -8,7 +8,7 @@ bcrypt = Bcrypt()
 
 db_config = {
     'host': 'localhost',
-    'database': 'foodordering',
+    'database': 'onlinefood',
     'user': 'root',
     'password': '',
 }
@@ -244,6 +244,55 @@ def users():
     except Exception as e:
         flash(f"Error fetching users: {str(e)}", "danger")
         return render_template("manage_users.html", users=[])
+    
+@admin.route('/delete-user/<int:user_id>', methods=['GET'])
+def delete_user(user_id):
+    try:
+        connection = connect_db()
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM customer WHERE customer_id = %s", (user_id,))
+        connection.commit()
+        cursor.close()
+        connection.close()
+        flash("User deleted successfully!", "success")
+    except Exception as e:
+        flash(f"Error deleting user: {str(e)}", "danger")
+
+    return redirect(url_for('admin.users'))
+
+@admin.route('/edit-user/<int:user_id>', methods=['GET', 'POST'])
+def edit_user(user_id):
+    connection = connect_db()
+    cursor = connection.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        contact = request.form.get('contact')
+        address = request.form.get('address')
+
+        try:
+            cursor.execute("""
+                UPDATE customer 
+                SET name = %s, email = %s, contact = %s, address = %s 
+                WHERE customer_id = %s
+            """, (name, email, contact, address, user_id))
+            connection.commit()
+            flash("User updated successfully!", "success")
+            return redirect(url_for('admin.users'))
+        except Exception as e:
+            flash(f"Error updating user: {str(e)}", "danger")
+
+    cursor.execute("SELECT * FROM customer WHERE customer_id = %s", (user_id,))
+    user = cursor.fetchone()
+    cursor.close()
+    connection.close()
+
+    if not user:
+        flash("User not found!", "danger")
+        return redirect(url_for('admin.users'))
+
+    return render_template("edit_user.html", user=user)
 
 @admin.route('/Manage-Categories', methods=['GET', 'POST'])
 def categories():
