@@ -34,17 +34,6 @@
                 </div>
             </form>
 
-            <!-- Dropdown to Select Category -->
-            <div class="mb-4">
-                <label for="categoryDropdown" class="form-label">Select a Category</label>
-                <select class="form-select" id="categoryDropdown" name="selected_category">
-                    <option selected disabled>Choose category...</option>
-                    {% for cat in categories %}
-                        <option value="{{ cat[0] }}">{{ cat[1] }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
             <!-- List of Existing Categories -->
             <h5>Existing Categories</h5>
             <ul class="list-group">

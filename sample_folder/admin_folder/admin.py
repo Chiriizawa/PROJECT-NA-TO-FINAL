@@ -96,60 +96,65 @@ def adminlogout():
 
 @admin.route('/Manage-Item', methods=['GET', 'POST'])
 def manageitem():
-    
     if 'user' not in session:
         return redirect(url_for('admin.login'))
-    
-    if request.method == "POST":
-        name = request.form.get('name')
-        price = request.form.get('price')
-        image = request.files.get('image')
-
-        if not name or not price or not image:
-            flash("Missing form data.", "danger")
-            return redirect(url_for('admin.manageitem'))
-
-        image_data = image.read()
-
-        try:
-            connection = connect_db()
-            cursor = connection.cursor()
-
-            cursor.execute(
-                "INSERT INTO items (item_name, price, image) VALUES (%s, %s, %s)",
-                (name, price, image_data)
-            )
-
-            connection.commit()
-            cursor.close()
-            connection.close()
-            flash("Item added successfully!", "success")
-            return redirect(url_for('admin.manageitem'))
-        except Exception as e:
-            flash(f"Error: {str(e)}", "danger")
-            return redirect(url_for('admin.manageitem'))
 
     try:
         connection = connect_db()
         cursor = connection.cursor()
 
-        cursor.execute("SELECT item_id, item_name, price, image FROM items")
+        # Fetch all categories for dropdown
+        cursor.execute("SELECT category_id, category_name FROM category")
+        categories = cursor.fetchall()
+
+        if request.method == "POST":
+            name = request.form.get('name')
+            price = request.form.get('price')
+            category_id = request.form.get('category_id')
+            image = request.files.get('image')
+
+            if not name or not price or not image or not category_id:
+                flash("Missing form data.", "danger")
+                return redirect(url_for('admin.manageitem'))
+
+            image_data = image.read()
+
+            try:
+                cursor.execute(
+                    "INSERT INTO items (item_name, price, image, category_id) VALUES (%s, %s, %s, %s)",
+                    (name, price, image_data, category_id)
+                )
+                connection.commit()
+                flash("Item added successfully!", "success")
+                return redirect(url_for('admin.manageitem'))
+            except Exception as e:
+                flash(f"Error inserting item: {str(e)}", "danger")
+                return redirect(url_for('admin.manageitem'))
+
+        # Use LEFT JOIN to include all items, even without valid category
+        cursor.execute("""
+            SELECT items.item_id, items.item_name, items.price, items.image,items.category_id, category.category_name
+            FROM items
+            LEFT JOIN category ON items.category_id = category.category_id
+        """)
         items = cursor.fetchall()
 
         processed_items = []
         for item in items:
-            item_id, item_name, price, image_data = item
+            item_id, item_name, price, image_data, category_id, category_name = item
             image_base64 = base64.b64encode(image_data).decode('utf-8') if image_data else None
-            processed_items.append((item_id, item_name, price, image_base64))
+            processed_items.append((item_id, item_name, price, image_base64, category_id, category_name or "Uncategorized"))
 
         cursor.close()
         connection.close()
+
     except Exception as e:
         processed_items = []
-        flash(f"Error fetching items: {str(e)}", "danger")
+        categories = []
+        flash(f"Error: {str(e)}", "danger")
 
-    response = make_response(render_template("manage_item.html", items=processed_items))
-    return response
+    return render_template("manage_item.html", items=processed_items, categories=categories)
+
 
 @admin.route('/delete/<int:item_id>', methods=['GET'])
 def delete_item(item_id):
