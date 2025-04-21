@@ -8,7 +8,7 @@ bcrypt = Bcrypt()
 
 db_config = {
     'host': 'localhost',
-    'database': 'onlinefood',
+    'database': 'foodordering',
     'user': 'root',
     'password': '',
 }

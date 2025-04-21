@@ -197,18 +197,18 @@
         renderCart();
     });
 
+    // ✅ Updated BUY NOW function
     function buyNow(name, price, image) {
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = "{{url_for('customer.orders')}}";
+        const cartItems = [{
+            name: name,
+            price: parseFloat(price),
+            quantity: 1,
+            image_url: image
+        }];
 
-        form.innerHTML = `
-            <input type="hidden" name="item_name_0" value="${name}">
-            <input type="hidden" name="item_price_0" value="${price}">
-            <input type="hidden" name="item_quantity_0" value="1">
-            <input type="hidden" name="item_image_0" value="${image}">`;
-        document.body.appendChild(form);
-        form.submit();
+        sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
+
+        window.location.href = "{{ url_for('customer.orders') }}";
     }
 </script>
 

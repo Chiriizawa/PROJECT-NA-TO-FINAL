@@ -19,7 +19,7 @@ def make_header(response):
 
 db_config = {
     'host':'localhost',
-    'database':'onlinefood',
+    'database':'foodordering',
     'user':'root',
     'password':'',
 }
@@ -151,22 +151,31 @@ def signup():
     errors = {}
 
     if request.method == 'POST':
-        name = request.form.get('name', '').strip()
+        firstname = request.form.get('firstname', '').strip()
+        middlename = request.form.get('middlename', '').strip()
+        surname = request.form.get('surname', '').strip()
         email = request.form.get('email', '').strip()
         contact = request.form.get('contact', '').strip()
-        address = request.form.get('address', '').strip()
         password = request.form.get('password', '').strip()
         confirm_password = request.form.get('confirm-password', '').strip()
 
-        # Validate name
-        if not name:
-            errors['name'] = "Name is required."
-        elif not name.isalpha():
-            errors['name'] = "Name must contain only letters."
-        elif len(name) < 4:
-            errors['name'] = "Name must be 4 or more characters."
+        # Name Validation
+        if not firstname:
+            errors['firstname'] = "First name is required."
+        elif not firstname.isalpha():
+            errors['firstname'] = "First name must contain only letters."
 
-        # Validate email
+        if not middlename and middlename != '':
+            errors['middlename'] = "Middle name is required."
+        elif middlename and not middlename.isalpha():
+            errors['middlename'] = "Middle name must contain only letters."
+
+        if not surname:
+            errors['surname'] = "Surname is required."
+        elif not surname.isalpha():
+            errors['surname'] = "Surname must contain only letters."
+
+        # Email Validation
         if not email:
             errors['email'] = "Email is required."
         else:
@@ -181,14 +190,16 @@ def signup():
                 cursor.close()
                 conn.close()
 
-            if existing_email:
-                errors['email'] = "Email already registered. Please use a different one."
+                if existing_email:
+                    errors['email'] = "Email already registered. Please use a different one."
 
-        # Validate contact
+        # Contact Validation
         if not contact:
             errors['contact'] = "Contact number is required."
-        elif not contact.isdigit() or len(contact) != 11:
-            errors['contact'] = "Contact number must be 11 digits."
+        elif not contact.isdigit():
+            errors['contact'] = "Contact number must contain only digits."
+        elif len(contact) != 10:
+            errors['contact'] = "Contact number must be exactly 10 digits."
         else:
             conn = connect_db()
             cursor = conn.cursor()
@@ -200,39 +211,49 @@ def signup():
             if existing_contact:
                 errors['contact'] = "Contact number already registered. Please use a different one."
 
-        # Validate address
-        if not address:
-            errors['address'] = "Address is required."
-
-        # Validate password
+        # Password Validation
         if not password:
             errors['password'] = "Password is required."
         elif len(password) < 8:
             errors['password'] = "Password must be at least 8 characters."
 
-        # Validate confirm password
-        if password != confirm_password:
+        if not confirm_password:
+            errors['confirm_password'] = "Please confirm your password."
+        elif password != confirm_password:
             errors['confirm_password'] = "Passwords do not match."
 
         if errors:
             return render_template("customersignup.html", errors=errors)
 
-        # Insert new customer into database
+        # Create full name
+        full_name = f"{firstname} {middlename} {surname}".strip()  # Strip middle name if empty
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+        # Get address values (region, province, municipality, barangay) from the form
+        region = request.form.get('region', '')
+        province = request.form.get('province', '')
+        municipality = request.form.get('municipality', '')
+        barangay = request.form.get('barangay', '')
+
+        # Concatenate address values into one string
+        full_address = f"{region}, {province}, {municipality}, {barangay}".strip(", ")
+
         conn = connect_db()
         cursor = conn.cursor()
+
+        # Insert into 'customer' table (name, address, email, contact, password)
         cursor.execute(
             "INSERT INTO customer (name, email, contact, address, password) VALUES (%s, %s, %s, %s, %s)",
-            (name, email, contact, address, hashed_password)
+            (full_name, email, contact, full_address, hashed_password)
         )
         conn.commit()
         cursor.close()
         conn.close()
 
-
         return render_template("customersignup.html", errors={})
 
     return render_template("customersignup.html", errors={})
+
 
 @customer.route('/Menu')
 def menu():
