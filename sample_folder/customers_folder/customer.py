@@ -254,6 +254,109 @@ def signup():
 
     return render_template("customersignup.html", errors={})
 
+@customer.route('/Forgot-Password', methods=['GET', 'POST'])
+def forgot_password():
+    if 'user' in session:
+        return redirect(url_for('customer.login'))  
+
+    email_error = None
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+
+        if not email:
+            email_error = "Email is required."
+        else:
+            conn = connect_db()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM customer WHERE email = %s", (email,))
+            user = cursor.fetchone()
+            cursor.close()
+            conn.close()
+
+            if not user:
+                email_error = "Email not found. Please check your email."
+            else:
+                session["reset_user_id"] = user['customer_id']
+                session["reset_verification_code"] = str(random.randint(100000, 999999))
+
+                if send_verification_email(email, session["reset_verification_code"]):
+                    return redirect(url_for("customer.verify_reset"))
+                else:
+                    email_error = "Failed to send verification email. Try again later."
+
+    return render_template("forgotpassword.html", email_error=email_error)
+
+
+@customer.route('/Verify-Reset', methods=['GET', 'POST'])
+def verify_reset():
+    if "user" in session:
+        return redirect(url_for('customer.login'))
+
+    if "reset_verification_code" not in session or "reset_user_id" not in session:
+        return redirect(url_for('customer.forgot_password'))
+
+    error_message = None
+
+    if request.method == "POST":
+        entered_code = "".join([
+            request.form.get("code1", ""), request.form.get("code2", ""),
+            request.form.get("code3", ""), request.form.get("code4", ""),
+            request.form.get("code5", ""), request.form.get("code6", "")
+        ])
+
+        if entered_code == session.get("reset_verification_code"):
+            session.pop("reset_verification_code", None)
+            return redirect(url_for("customer.reset_password"))
+        else:
+            error_message = "Invalid verification code."
+
+    return render_template("verifyreset.html", error_message=error_message)
+
+
+from flask_bcrypt import Bcrypt
+
+bcrypt = Bcrypt()  # Make sure this is initialized in your app setup
+
+@customer.route('/Reset-Password', methods=['GET', 'POST'])
+def reset_password():
+    if "reset_user_id" not in session:
+        return redirect(url_for("customer.login"))
+
+    password_error = None
+
+    if request.method == "POST":
+        new_password = request.form.get("new_password", "").strip()
+        confirm_password = request.form.get("confirm_password", "").strip()
+
+        if not new_password or not confirm_password:
+            password_error = "Both password fields are required."
+        elif new_password != confirm_password:
+            password_error = "Passwords do not match."
+        elif len(new_password) < 8:
+            password_error = "Password must be at least 8 characters long."
+        else:
+            # ✅ Hash the password before saving
+            hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+
+            # Update password in database
+            conn = connect_db()
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE customer SET password = %s WHERE customer_id = %s",
+                (hashed_password, session["reset_user_id"])
+            )
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            # Clear reset session data
+            session.pop("reset_user_id", None)
+
+            return redirect(url_for("customer.login"))
+
+    return render_template("resetpassword.html", password_error=password_error)
+
 
 @customer.route('/Menu')
 def menu():

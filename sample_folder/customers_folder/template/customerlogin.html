@@ -17,7 +17,7 @@
                     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
             <h3 class="text-center text-white">Log In</h3>
             <form method="POST" action="{{ url_for('customer.login') }}">
-                
+    
                 <!-- Email Input -->
                 <div class="mb-3">
                     <label for="email" class="form-label text-white">Email</label>
@@ -29,15 +29,15 @@
                     </div>
                     {% endif %}
                 </div>
-
+    
                 <!-- Password Input with Eye Icon -->
-                <div class="mb-3 position-relative">
+                <div class="mb-1 position-relative">
                     <label for="password" class="form-label text-white">Password</label>
                     <div class="position-relative">
                         <input type="password" class="form-control {% if password_error %}is-invalid{% endif %}" 
-                               name="password" id="password" placeholder="Enter your password" style="padding-right: 40px;">
+                            name="password" id="password" placeholder="Enter your password" style="padding-right: 40px;">
                         <i class="fa fa-eye-slash" id="togglePassword" 
-                           style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #555;"></i>
+                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #555;"></i>
                     </div>
                     {% if password_error %}
                     <div class="invalid-feedback d-block text-danger">
@@ -45,8 +45,16 @@
                     </div>
                     {% endif %}
                 </div>
-
-                <a href="{{url_for('customer.verify')}}"><button type="submit" class="btn btn-success w-100 mb-3">Log In</button></a>
+    
+                <div class="mb-1 text-end">
+                    <a href="{{ url_for('customer.forgot_password') }}" class="text-primary text-decoration-none">
+                        Forgot Password?
+                    </a>
+                </div>
+    
+                <!-- Login Button -->
+                <button type="submit" class="btn btn-success w-100 mb-3">Log In</button>
+    
                 <div class="text-center">
                     <span class="text-white">Don't have an account? 
                         <a href="{{ url_for('customer.signup') }}" class="text-decoration-none">Sign Up</a>
@@ -55,6 +63,7 @@
             </form>
         </div>
     </div>
+    
 
     <script>
         const togglePassword = document.getElementById('togglePassword');

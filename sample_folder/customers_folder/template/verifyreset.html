@@ -52,10 +52,10 @@
             </lottie-player>
         </div>
 
-        <h2>Verify your Account</h2>
+        <h2>Reset your Account</h2>
         <p>Enter the six-digit code sent to your email.</p>
 
-        <form method="POST" action="{{ url_for('customer.verify') }}">
+        <form method="POST" action="{{ url_for('customer.verify_reset') }}">
             <div class="d-flex justify-content-center">
                 <input type="text" name="code1" class="code-input" maxlength="1">
                 <input type="text" name="code2" class="code-input" maxlength="1">

@@ -1,92 +1,103 @@
 {% extends "base.html" %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/customer/index.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <title>Crave On</title>
 {% endblock %}
 
 {% block content %}
 
-<!-- Section 1 - Hero Section -->
-<div class="section bg1">
-    <div class="hero-content text-center text-white">
-        <h1 class="fw-bold display-4">Welcome to Crave On</h1>
-        <p class="lead">Munch like a crunch, crave like a beast. Go on and crunch your cravings now!</p>
-        <a href="{{ url_for('customer.menu') }}" class="btn btn-outline-light btn-lg mt-3 custom-btn">
-            Check Menu
-            <i class="fa-solid fa-arrow-right" id="icon"></i>
-        </a>
+<!-- Hero Section - Redesigned -->
+<!-- Hero Section - Adjusted Height -->
+<section class="w-full h-screen bg-white flex items-start justify-center px-6 md:px-18 pt-44">
+    <!-- ↑↑↑ TIP: Changed `items-center` to `items-start` and added `pt-20` to push content slightly down from the top -->
+
+    <div class="max-w-7xl w-full grid grid-cols-1 md:grid-cols-2 gap-10">
+
+        <!-- Left Content -->
+        <div class="space-y-6">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
+                Welcome to <span class= "text-yellow-400">Crave On</span>
+            </h1>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
+                Delivered Your <br>
+            <span class="text-orange-500">Food in 30 minute.</span>
+            </h1>
+            <p class="text-gray-600 text-base md:text-lg">
+                Popular Online Food Home Delivery Services In India.
+            </p>
+            <div class="flex flex-wrap gap-4 mt-6">
+            <a href="{{ url_for('customer.menu') }}"
+                class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg text-base font-semibold transition no-underline hover:no-underline">
+                Order Menu
+            </a>
+            </div>
+        </div>
     </div>
-</div>
+</section>
+  
 
 <!-- Section 2 - Popular Dishes -->
-<div class="section bg2">
-    <div class="container text-center">
-        <h1 class="mb-4 text-4xl text-white">Popular Dishes</h1>
-        <div class="row justify-content-center">
-            {% for item in items %}
-            <div class="col-lg-3 col-md-4 col-sm-6 mb-4" id="item-{{ loop.index }}" data-category="{{ item[3] }}">
-                <div class="card shadow-sm h-100">
-                    {% if item[3] %}
-                        <img src="data:image/jpeg;base64,{{ item[3] }}" class="card-img-top" alt="{{ item[1] }}">
-                    {% else %}
-                        <img src="#" class="card-img-top" alt="Default Image">
-                    {% endif %}
-
-                    <div class="card-body">
-                        <h5 class="card-title">{{ item[1] }}</h5>
-                        <div class="mb-2">
-                            <span class="text-muted">Price:</span>
-                            <span class="fw-bold">₱{{ item[2] }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-                <p class="text-center text-white">No items available.</p>
-            {% endfor %}
+<section class="bg-gray-900 py-16">
+  <div class="container mx-auto px-6 text-center">
+    <h1 class="text-white text-4xl font-bold mb-8">Popular Dishes</h1>
+    <div class="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      {% for item in items %}
+      <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        {% if item[3] %}
+          <img src="data:image/jpeg;base64,{{ item[3] }}" alt="{{ item[1] }}" class="w-full h-48 object-cover">
+        {% else %}
+          <img src="#" alt="Default Image" class="w-full h-48 object-cover">
+        {% endif %}
+        <div class="p-4 text-left">
+          <h5 class="font-semibold text-lg">{{ item[1] }}</h5>
+          <p class="text-gray-600 mt-2">Price: <span class="font-bold">₱{{ item[2] }}</span></p>
         </div>
+      </div>
+      {% else %}
+        <p class="text-white col-span-full">No items available.</p>
+      {% endfor %}
     </div>
-</div>
+  </div>
+</section>
 
 <!-- Section 3 - Contact/Info Section -->
-<div class="section bg3">
-    <div class="hero-content text-center text-white">
-        <h1 class="fw-bold display-4">Be a loyal customer now</h1>
-        <p class="lead">Have questions? We're here to help!</p>
-        <a href="#footer" class="btn btn-outline-light btn-lg mt-3 custom-btn">
-            Contact Us
-        </a>
-    </div>
-</div>
+<section class="bg-cover bg-center bg-no-repeat py-24 text-white text-center" style="background-image: url('{{ url_for('static', filename='images/bg3.jpg') }}');">
+  <h1 class="text-4xl font-bold mb-4">Be a loyal customer now</h1>
+  <p class="text-lg mb-6">Have questions? We're here to help!</p>
+  <a href="#footer" class="bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition">
+    Contact Us
+  </a>
+</section>
 
-<footer class="bg-dark text-light py-4 mx-auto w-full" id="footer">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-3">
-                <h4 class="fw-bold text-light">Crave On</h4>
-                <p class="text-light">Cravings mo, Craving ko, Crave On</p>
-            </div>
-            <div class="col-md-3">
-                <h5 class="fw-bold">Our Categories</h5>
-                <ul class="list-unstyled">
-                    <li><a href="#" class="text-light text-decoration-none">Pork</a></li>
-                    <li><a href="#" class="text-light text-decoration-none">Chicken</a></li>
-                    <li><a href="#" class="text-light text-decoration-none">Vegetables</a></li>
-                    <li><a href="#" class="text-light text-decoration-none">Fish</a></li>
-                </ul>
-            </div>
-            <div class="col-md-3">
-                <h5 class="fw-bold">Contact Us</h5>
-                <p><i class="bi bi-telephone-fill text-warning"></i> 1123303012</p>
-                <p><i class="bi bi-globe text-warning"></i> CraveOn.com</p>
-                <p><i class="bi bi-envelope-fill text-warning"></i> @CraveOncom</p>
-                <p><i class="bi bi-geo-alt-fill text-warning"></i> minsan sa kanto minsan sa tabi</p>
-            </div>
-        </div>
+<!-- Footer -->
+<footer class="bg-gray-800 text-gray-100 py-12" id="footer">
+  <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+    
+    <div>
+      <h4 class="text-xl font-bold mb-2">Crave On</h4>
+      <p>Cravings mo, Craving ko, Crave On</p>
     </div>
+
+    <div>
+      <h5 class="font-semibold mb-3">Our Categories</h5>
+      <ul class="space-y-1">
+        <li><a href="#" class="hover:text-orange-400">Pork</a></li>
+        <li><a href="#" class="hover:text-orange-400">Chicken</a></li>
+        <li><a href="#" class="hover:text-orange-400">Vegetables</a></li>
+        <li><a href="#" class="hover:text-orange-400">Fish</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h5 class="font-semibold mb-3">Contact Us</h5>
+      <p>📞 1123303012</p>
+      <p>🌐 CraveOn.com</p>
+      <p>✉️ @CraveOncom</p>
+      <p>📍 minsan sa kanto minsan sa tabi</p>
+    </div>
+
+  </div>
 </footer>
+
 {% endblock %}

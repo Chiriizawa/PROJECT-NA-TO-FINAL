@@ -2,35 +2,13 @@
 
 {% block head %}
     <title>Crave On - My Orders</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/customer/myorder.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/customer/myorders.css') }}">
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/customer/myorder.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
 {% endblock %}
 
 {% block content %}
-
-
-<div class="bg-container">
-
-    <div class="col-md-10 mx-auto">
-        <div class="orders-container">
-            <table class="table table-dark table-hover">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Items</th>
-                        <th>Quantity</th>
-                        <th>Total Amount</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="orders-table-body">
-                </tbody>
-            </table>
-        </div>
+<div class="max-w-7xl mx-auto px-4 py-10">
+    <div id="orders-container" class="flex flex-wrap gap-6 justify-center">
     </div>
 </div>
 
@@ -39,44 +17,48 @@ fetch('/CraveOn/api/myorders')
     .then(response => response.json())
     .then(data => {
         window.ordersData = data;
-        updateOrderTable();
+        displayOrdersAsCards();
     });
 
-function updateOrderTable() {
-    let tableBody = document.getElementById("orders-table-body");
-    tableBody.innerHTML = "";
-    window.ordersData.forEach((order, index) => {
-        let row = `<tr onclick="showOrderDetails(${index})" style="cursor:pointer;">
-            <td>${order.name}</td>
-            <td>${order.items.map(item => item.name).join("<br>")}</td>
-            <td>${order.items.map(item => + item.quantity).join("<br>")}</td>
-            <td>₱${order.total_amount}</td>
-            <td>${order.order_date}</td>
-            <td>${order.status}</td>
-        </tr>`;
-        tableBody.innerHTML += row;
+function displayOrdersAsCards() {
+    const container = document.getElementById("orders-container");
+    container.innerHTML = "";
+
+    window.ordersData.slice().reverse().forEach((order, index) => {
+        const card = document.createElement("div");
+        card.className = "bg-white shadow-lg rounded-xl p-6 border hover:shadow-xl transition cursor-pointer w-96";
+
+        card.innerHTML = `
+            <h3 class="text-xl font-semibold text-dark-500 mb-2">${order.name}</h3>
+            <p class="text-gray-700 mb-1"><strong>Date:</strong> ${order.order_date}</p>
+            <p class="text-gray-700 mb-1"><strong>Status:</strong> <span class="inline-block px-2 py-1 bg-gray-200 rounded text-sm">${order.status}</span></p>
+            <p class="text-gray-700 mb-2"><strong>Total:</strong> ₱${order.total_amount}</p>
+            <div class="mb-2">
+                <p class="text-gray-700 font-medium">Items:</p>
+                <ul class="list-disc list-inside text-sm text-gray-600 mt-1">
+                    ${order.items.map(item => `<li>${item.name} x${item.quantity}</li>`).join('')}
+                </ul>
+            </div>
+            <div class="text-right mt-4">
+                <button
+                    class="cancel-btn bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded ${order.status === 'Cancelled' || order.status === 'Completed' ? 'hidden' : ''}"
+                    data-id="${order.id}">
+                    Cancel Order
+                </button>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+
+    // Add event listeners to cancel buttons
+    document.querySelectorAll(".cancel-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            const orderId = e.target.dataset.id;
+            cancelOrder(orderId);
+        });
     });
 }
 
-function showOrderDetails(index) {
-    const order = window.ordersData[index];
-    document.getElementById("modalName").textContent = order.name;
-    document.getElementById("modalContact").textContent = order.contact;
-    document.getElementById("modalAddress").textContent = order.address;
-    document.getElementById("modalOrderDate").textContent = order.order_date;
-    document.getElementById("modalStatus").textContent = order.status;
-    document.getElementById("modalTotalAmount").textContent = order.total_amount;
-
-    const itemsList = document.getElementById("modalItems");
-    itemsList.innerHTML = "";
-    order.items.forEach(item => {
-        itemsList.innerHTML += `<li>${item.name} - ${item.quantity} - ₱${item.price}</li>`;
-    });
-
-    document.getElementById("modalPaymentScreenshot").src = order.payment_screenshot;
-
-    let orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
-    orderModal.show();
-}
 </script>
 {% endblock %}
