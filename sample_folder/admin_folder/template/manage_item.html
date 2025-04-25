@@ -38,25 +38,28 @@
     </form>
 </div>
 
-<!-- Item List Table -->
+<!-- Item List Table with Search -->
 <div class="card p-4 shadow">
-    <h4>Item List</h4>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Item List</h4>
+        <input type="text" id="itemSearch" class="form-control w-25" placeholder="Search items...">
+    </div>
     <table class="table table-bordered table-striped">
         <thead class="table-dark">
             <tr>
                 <th>Item Name</th>
                 <th>Price</th>
-                <th>Category</th> <!-- Newly added -->
+                <th>Category</th>
                 <th>Image</th>
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="itemTableBody">
             {% for item in items %}
             <tr>
                 <td>{{ item[1] }}</td>
                 <td>₱{{ item[2] }}</td>
-                <td>{{ item[5] }}</td> <!-- Show category name -->
+                <td>{{ item[5] }}</td>
                 <td>
                     {% if item[3] %}
                         <img src="data:image/jpeg;base64,{{ item[3] }}" width="50" height="50" alt="Item Image">
@@ -142,5 +145,19 @@
     </table>
 </div>
 
+<!-- Scripts -->
 <script src="{{url_for('static', filename = 'js/adminitem.js')}}"></script>
+
+<script>
+// Live Search Filter
+document.getElementById("itemSearch").addEventListener("keyup", function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#itemTableBody tr");
+
+    rows.forEach(row => {
+        const itemName = row.querySelector("td").innerText.toLowerCase();
+        row.style.display = itemName.includes(filter) ? "" : "none";
+    });
+});
+</script>
 {% endblock %}

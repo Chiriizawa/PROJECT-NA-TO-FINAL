@@ -336,7 +336,7 @@ def reset_password():
         elif len(new_password) < 8:
             password_error = "Password must be at least 8 characters long."
         else:
-            # ✅ Hash the password before saving
+            # Hash the password before saving
             hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
 
             # Update password in database
