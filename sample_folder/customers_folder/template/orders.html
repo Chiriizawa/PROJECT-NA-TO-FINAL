@@ -14,7 +14,7 @@
             <form id="orderForm" method="POST">
                 <div id="orderItemsContainer"></div>
                 <div class="border-top pt-2">
-                    <p class="total-amount" id="totalAmountText">Total Amount: ₱0</p>
+                    <p class="total-amount text-end" id="totalAmountText">Total Amount: ₱0</p>
                     <button type="button" class="btn-order" id="proceedPaymentBtn">PROCEED TO PAYMENT</button>
                 </div>                    
             </form>
@@ -27,41 +27,71 @@
         const container = document.getElementById("orderItemsContainer");
         const totalAmountText = document.getElementById("totalAmountText");
 
-        // Load cart items from sessionStorage
-        const cartItems = JSON.parse(sessionStorage.getItem('cart_items')) || [];
-        let total = 0;
+        let cartItems = JSON.parse(sessionStorage.getItem('cart_items')) || [];
 
-        if (cartItems.length === 0) {
-            container.innerHTML = "<p>Your order is empty.</p>";
-        } else {
+        function renderCart() {
+            container.innerHTML = "";
+            let total = 0;
+
+            if (cartItems.length === 0) {
+                container.innerHTML = "<p>Your order is empty.</p>";
+                totalAmountText.textContent = `Total Amount: ₱0`;
+                return;
+            }
+
             cartItems.forEach((item, index) => {
                 const subtotal = item.price * item.quantity;
                 total += subtotal;
 
                 container.innerHTML += `
-                    <div class="cart-item" data-index="${index}">
-                        <div class="item-info d-flex align-items-center mb-2">
-                            <img class="item-image me-2" src="${item.image_url}" alt="${item.name}" style="width: 60px; height: 60px;">
-                            <p>${item.name} - ${item.quantity} x ₱${item.price}</p>
+                    <div class="cart-item mb-3" data-index="${index}">
+                        <div class="item-info d-flex align-items-center">
+                            <img class="item-image me-3" src="${item.image_url}" alt="${item.name}" style="width: 60px; height: 60px;">
+                            <div class="d-flex flex-column">
+                                <div class="d-flex align-items-center mb-1">
+                                    <strong class="me-2">${item.name}</strong>
+                                    <button class="btn btn-sm btn-outline-light me-1 qty-btn" data-index="${index}" data-action="decrease">-</button>
+                                    <span>${item.quantity}</span>
+                                    <button class="btn btn-sm btn-outline-light ms-1 qty-btn" data-index="${index}" data-action="increase">+</button>
+                                </div>
+                                <small class="text-muted">₱${item.quantity} x ₱${item.price} = ₱${subtotal.toFixed(2)}</small>
+                            </div>
                         </div>
                     </div>`;
             });
+
+            totalAmountText.textContent = `Total Amount: ₱${total.toFixed(2)}`;
+            sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
         }
 
-        totalAmountText.textContent = `Total Amount: ₱${total}`;
-    });
+        container.addEventListener("click", function (e) {
+            if (e.target.classList.contains("qty-btn")) {
+                const index = parseInt(e.target.getAttribute("data-index"));
+                const action = e.target.getAttribute("data-action");
 
-    // Proceed to payment
-    document.getElementById('proceedPaymentBtn').addEventListener('click', function () {
-        const cartItems = JSON.parse(sessionStorage.getItem('cart_items')) || [];
+                if (action === "increase") {
+                    cartItems[index].quantity += 1;
+                } else if (action === "decrease" && cartItems[index].quantity > 1) {
+                    cartItems[index].quantity -= 1;
+                }
 
-        if (cartItems.length === 0) {
-            alert("Order is empty!");
-            return;
-        }
+                renderCart();
+            }
+        });
 
-        // Redirect to the payment page without saving the order
-        window.location.href = "{{ url_for('customer.payment') }}";
+        // Initial render
+        renderCart();
+
+        // Proceed to payment
+        document.getElementById('proceedPaymentBtn').addEventListener('click', function () {
+            if (cartItems.length === 0) {
+                alert("Order is empty!");
+                return;
+            }
+
+            sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
+            window.location.href = "{{ url_for('customer.payment') }}";
+        });
     });
 </script>
 {% endblock %}

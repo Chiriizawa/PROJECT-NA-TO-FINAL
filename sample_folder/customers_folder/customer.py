@@ -313,11 +313,6 @@ def verify_reset():
 
     return render_template("verifyreset.html", error_message=error_message)
 
-
-from flask_bcrypt import Bcrypt
-
-bcrypt = Bcrypt()  # Make sure this is initialized in your app setup
-
 @customer.route('/Reset-Password', methods=['GET', 'POST'])
 def reset_password():
     if "reset_user_id" not in session:
@@ -543,13 +538,28 @@ def thankyou():
 
 @customer.route('/Account')
 def account():
-    connection = connect_db()
-    cursor = connection.cursor()
+    if 'user' not in session:
+        return redirect(url_for('customer.login'))
+    return render_template("account.html")
 
-    cursor.execute('SELECT * FROM customer')
-    data = cursor.fetchall()
+# API to fetch account details
+@customer.route('/api/account', methods=['GET'])
+def account_api():
+    if 'user' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
 
+    email = session.get('user_email')  # Assuming you store the email in the session
+    if not email:
+        return jsonify({'error': 'Email not found in session'}), 400
+
+    conn = connect_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT name, email, contact, address FROM customer WHERE email = %s", (email,))
+    user_data = cursor.fetchone()
     cursor.close()
-    connection.close()
+    conn.close()
 
-    return render_template("account.html", data=data)
+    if not user_data:
+        return jsonify({'error': 'User not found'}), 404
+
+    return jsonify(user_data)  # Return the user data as JSON

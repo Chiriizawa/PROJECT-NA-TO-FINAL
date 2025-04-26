@@ -12,7 +12,7 @@ body {
 .sidebar {
     width: 250px;
     min-height: 100vh;
-    background-color: #f8f9fa;
+    background-color: #81A094;
     box-shadow: 2px 0 5px hsla(0, 0%, 0%, 0.1);
     position: fixed;
 }
@@ -28,7 +28,7 @@ body {
 
 /* Add hover effect only to nav links, not the logo */
 .sidebar a:not(.navbar-brand):hover {
-    background-color: #d5c4d9;
+    background-color: #e3ebec;
     color: #000;
     transform: translateX(5px);
     box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);

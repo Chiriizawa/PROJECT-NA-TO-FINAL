@@ -1,7 +1,6 @@
 /* Background styling */
 body {
-    background: url("../../images/bg.jpg") no-repeat center center fixed;
-    background-size: cover;
+    background-color: #81A094;
 }
 
 /* Font and color styling */

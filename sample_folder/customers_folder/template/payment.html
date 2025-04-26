@@ -19,8 +19,8 @@
             </div>
 
             <!-- Total Amount -->
-            <div class="border-top pt-2">
-                <p class="total-amount" id="total-amount">Total Amount: ₱0.00</p>
+            <div class="border-top pt-2 text-end">
+                <p class="total-amount fw-bold" id="total-amount">Total Amount: ₱0.00</p>
             </div>
 
             <!-- Customer Details -->
@@ -85,7 +85,7 @@
 
     cartData.forEach(item => {
         const itemRow = document.createElement('div');
-        itemRow.classList.add('item-row');
+        itemRow.classList.add('item-row', 'd-flex', 'justify-content-between', 'text-white', 'mb-2');
 
         const nameQty = document.createElement('span');
         nameQty.textContent = `${item.name} (x${item.quantity})`;

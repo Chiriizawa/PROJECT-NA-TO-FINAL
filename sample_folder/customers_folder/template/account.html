@@ -2,11 +2,11 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <title>Crave On - Account</title>
 {% endblock %}
 
 {% block content %}
-
 <div class="container">
     <h2 class="text-center mb-4">ACCOUNT</h2>
 
@@ -18,25 +18,52 @@
                     <th>Email</th>
                     <th>Phone Number</th>
                     <th>Address</th>
-                    <th>Actions</th> 
+                    <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for user in data %}
-                <tr>
-                    <td>{{ user[1] }}</td> 
-                    <td>{{ user[2] }}</td> 
-                    <td>{{ user[3] }}</td> 
-                    <td>{{ user[4] }}</td> 
-                    <td>
-                        <a href="#" class="btn btn-warning btn-sm">
-                            <i class="fas fa-edit"></i> Edit
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
+            <tbody id="account">
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/customer/api/account')  // API call using fetch
+            .then(response => {
+                if (!response.ok) {  // Check if the response is successful
+                    throw new Error('Error loading account data');
+                }
+                return response.json();  // Parse JSON from response
+            })
+            .then(data => {
+                console.log('API Response:', data);  // Debugging response
+                if (data.error) {
+                    document.getElementById('account').innerHTML = ` 
+                        <tr><td colspan="5" class="text-danger text-center">Error loading account data: ${data.error}</td></tr>
+                    `;
+                } else {
+                    // Sanitize the data (trim any unwanted special characters like \r\n)
+                    const sanitizedName = data.name.trim();
+                    const row = `
+                        <tr>
+                            <td>${sanitizedName}</td>
+                            <td>${data.email}</td>
+                            <td>${data.contact}</td>
+                            <td>${data.address}</td>
+                            <td><a href="#" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Edit</a></td>
+                        </tr>
+                    `;
+                    document.getElementById('account').innerHTML = row;
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching data:", error);  // Log error details
+                document.getElementById('account').innerHTML = ` 
+                    <tr><td colspan="5" class="text-danger text-center">Failed to fetch account data.</td></tr>
+                `;
+            });
+    });
+</script>
+
 {% endblock %}
