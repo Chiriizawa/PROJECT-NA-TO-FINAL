@@ -54,7 +54,6 @@ def index():
         formatted_items.append((item_id, name, price, img_base64))
 
     return render_template('index.html', items=formatted_items)
-
 @customer.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user' in session:
@@ -62,28 +61,46 @@ def login():
 
     email_error = None
     password_error = None
+    errors = {}
 
     if request.method == "POST":
         email = request.form.get("email", "").strip()
         password = request.form.get("password", "").strip()
 
+        # Email validation
         if not email:
-            email_error = "Email is required."
-        elif not password:
-            password_error = "Password is required."
+            errors['email'] = "Email is required."
         else:
+            # Regular expression for email format validation
+            email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_pattern, email):
+                errors['email'] = "Invalid email format."
+            else:
+                # Check if email already exists in the database
+                conn = connect_db()
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute("SELECT * FROM customer WHERE email = %s", (email,))
+                existing_email = cursor.fetchone()
+                cursor.close()
+                conn.close()
+
+                if not existing_email:
+                    errors['email'] = "Email not found. Please check your email or register if you don't have an account."
+
+        # Password validation
+        if not password:
+            password_error = "Password is required."
+
+        # If there are no errors, proceed with the login process
+        if not errors and not password_error:
             conn = connect_db()
             cursor = conn.cursor(dictionary=True)
             cursor.execute("SELECT * FROM customer WHERE email = %s", (email,))
             user = cursor.fetchone()
-            cursor.close()
-            conn.close()
 
-            if not user:
-                email_error = "Email not found. Please check your email."
-            elif not bcrypt.check_password_hash(user['password'], password):
-                password_error = "Incorrect password. Please try again."
-            else:
+            if user and bcrypt.check_password_hash(user['password'], password):
+                # Store the user's email in session
+                session["user_email"] = user['email']  # Store the logged-in user's email in the session
                 session["temp_user_id"] = user['customer_id']
                 session["verification_code"] = str(random.randint(100000, 999999))
 
@@ -91,9 +108,15 @@ def login():
                     return redirect(url_for("customer.verify"))
                 else:
                     flash("Failed to send verification email. Please try again.", "danger")
+            else:
+                password_error = "Incorrect password. Please try again."
 
-    response = make_response(render_template("customerlogin.html", email_error=email_error, password_error=password_error))
+            cursor.close()
+            conn.close()
+
+    response = make_response(render_template("customerlogin.html", email_error=errors.get('email'), password_error=password_error))
     return response
+
 
 def send_verification_email(email, code):
     try:
@@ -360,20 +383,32 @@ def menu():
 
     connection = connect_db()
     cursor = connection.cursor()
-    cursor.execute("SELECT item_id, item_name, price, image FROM items")
+
+    # Fetch items with category name
+    cursor.execute("""
+        SELECT i.item_id, i.item_name, i.price, i.image, c.category_name 
+        FROM items i
+        JOIN category c ON i.category_id = c.category_id
+    """)
     items = cursor.fetchall()
+
+    # Fetch categories
+    cursor.execute("SELECT category_id, category_name FROM category")
+    categories = cursor.fetchall()
+
     connection.close()
 
+    # Format items (encode images)
     formatted_items = []
-    for item_id, name, price, img in items:
+    for item_id, name, price, img, category_name in items:
         if isinstance(img, bytes):
             img_base64 = base64.b64encode(img).decode('utf-8')
         else:
             img_base64 = None
+        formatted_items.append((item_id, name, price, img_base64, category_name))  # Important: category_name
 
-        formatted_items.append((item_id, name, price, img_base64))
+    return render_template('Menu.html', items=formatted_items, categories=categories)
 
-    return render_template('Menu.html', items=formatted_items)
 
 @customer.route('/Orders', methods=['GET', 'POST'])
 def orders():
@@ -475,6 +510,24 @@ def payment():
     connection.close()
     return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user, message=message, message_type=message_type)
 
+@customer.route('/api/customer_details', methods=['GET'])
+def api_customer_details():
+    if 'user' not in session:
+        return jsonify({'message': 'User not logged in'}), 401
+
+    connection = connect_db()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("SELECT customer_id, name, email, contact, address FROM customer WHERE customer_id = %s LIMIT 1", (session['user'],))
+    user = cursor.fetchone()
+
+    connection.close()
+
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    return jsonify(user)
+
 @customer.route('/MyOrders', methods=['GET'])
 def myorder():
     highlight_order_id = request.args.get('highlight_order_id')
@@ -536,22 +589,20 @@ def my_orders():
 def thankyou():
     return render_template("thankyou.html")
 
-@customer.route('/Account')
+@customer.route('/Account', methods=['GET'])
 def account():
-    if 'user' not in session:
-        return redirect(url_for('customer.login'))
     return render_template("account.html")
 
-# API to fetch account details
 @customer.route('/api/account', methods=['GET'])
 def account_api():
-    if 'user' not in session:
+    if 'user_email' not in session:
         return jsonify({'error': 'Unauthorized'}), 401
 
-    email = session.get('user_email')  # Assuming you store the email in the session
+    email = session.get('user_email')  # Retrieve the user's email from the session
     if not email:
         return jsonify({'error': 'Email not found in session'}), 400
 
+    # Fetch user data from the database
     conn = connect_db()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT name, email, contact, address FROM customer WHERE email = %s", (email,))
@@ -562,4 +613,8 @@ def account_api():
     if not user_data:
         return jsonify({'error': 'User not found'}), 404
 
-    return jsonify(user_data)  # Return the user data as JSON
+    # Return the user data as a JSON response
+    return jsonify(user_data)
+
+
+

@@ -1,68 +1,100 @@
 {% extends "base.html" %}
 
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<title>Crave On - Account</title>
-{% endblock %}
-
 {% block content %}
-<div class="container">
-    <h2 class="text-center mb-4">ACCOUNT</h2>
+<div class="container py-5">
 
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered">
-            <thead class="table-dark">
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone Number</th>
-                    <th>Address</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="account">
-            </tbody>
-        </table>
+    <!-- Card for account details -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+        
+            <div class="row">
+                <!-- Name Section -->
+                <div class="col-md-6 mb-3">
+                    <div class="card border-light">
+                        <div class="card-body">
+                            <h6 class="card-title">Name</h6>
+                            <p class="card-text" id="account-name">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Section -->
+                <div class="col-md-6 mb-3">
+                    <div class="card border-light">
+                        <div class="card-body">
+                            <h6 class="card-title">Email</h6>
+                            <p class="card-text" id="account-email">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Phone Section -->
+                <div class="col-md-6 mb-3">
+                    <div class="card border-light">
+                        <div class="card-body">
+                            <h6 class="card-title">Phone Number</h6>
+                            <p class="card-text" id="account-phone">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address Section -->
+                <div class="col-md-6 mb-3">
+                    <div class="card border-light">
+                        <div class="card-body">
+                            <h6 class="card-title">Address</h6>
+                            <p class="card-text" id="account-address">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Button -->
+            <div class="text-center mt-4">
+                <a href="#" class="btn btn-warning text-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit">
+                    <i class="fas fa-edit"></i> Edit Account
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 
+<!-- Script to fetch account data -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        fetch('/customer/api/account')  // API call using fetch
-            .then(response => {
-                if (!response.ok) {  // Check if the response is successful
-                    throw new Error('Error loading account data');
-                }
-                return response.json();  // Parse JSON from response
-            })
+        // Fetch the account data from the API
+        fetch('/CraveOn/api/account')
+            .then(response => response.json())
             .then(data => {
-                console.log('API Response:', data);  // Debugging response
                 if (data.error) {
-                    document.getElementById('account').innerHTML = ` 
-                        <tr><td colspan="5" class="text-danger text-center">Error loading account data: ${data.error}</td></tr>
-                    `;
+                    document.getElementById('account-name').textContent = "Error: " + data.error;
+                    document.getElementById('account-email').textContent = "";
+                    document.getElementById('account-phone').textContent = "";
+                    document.getElementById('account-address').textContent = "";
                 } else {
-                    // Sanitize the data (trim any unwanted special characters like \r\n)
-                    const sanitizedName = data.name.trim();
-                    const row = `
-                        <tr>
-                            <td>${sanitizedName}</td>
-                            <td>${data.email}</td>
-                            <td>${data.contact}</td>
-                            <td>${data.address}</td>
-                            <td><a href="#" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Edit</a></td>
-                        </tr>
-                    `;
-                    document.getElementById('account').innerHTML = row;
+                    document.getElementById('account-name').textContent = data.name || "Not available";
+                    document.getElementById('account-email').textContent = data.email || "Not available";
+                    document.getElementById('account-phone').textContent = data.contact || "Not available";
+                    document.getElementById('account-address').textContent = data.address || "Not available";
                 }
             })
             .catch(error => {
-                console.error("Error fetching data:", error);  // Log error details
-                document.getElementById('account').innerHTML = ` 
-                    <tr><td colspan="5" class="text-danger text-center">Failed to fetch account data.</td></tr>
-                `;
+                console.error("Error fetching data:", error);
+                document.getElementById('account-name').textContent = "Failed to load data.";
+                document.getElementById('account-email').textContent = "";
+                document.getElementById('account-phone').textContent = "";
+                document.getElementById('account-address').textContent = "";
             });
+    });
+</script>
+
+<!-- Tooltip Initialization (for the Edit button) -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     });
 </script>
 

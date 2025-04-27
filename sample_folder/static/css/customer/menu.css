@@ -45,9 +45,8 @@
 .bg-container {
     width: 100vw;
     height: 100vh;
-    background: url("../static/images/bg1.jpg") no-repeat center center;
-    background-size: cover;
     display: flex;
+    background-color: #e9ebe9;
     justify-content: center;
     align-items: flex-start;
     overflow-y: auto;

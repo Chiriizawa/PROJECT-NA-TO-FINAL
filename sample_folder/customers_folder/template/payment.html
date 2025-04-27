@@ -25,9 +25,9 @@
 
             <!-- Customer Details -->
             <h4 class="text-white mt-4">Customer Details</h4>
-            <p class="text-white">Name: <span id="userName">{{ user['name'] }}</span></p>
-            <p class="text-white">Contact: <span id="userContact">{{ user['contact'] }}</span></p>
-            <p class="text-white">Address: <span id="userAddress">{{ user['address'] }}</span></p>
+            <div id="customer-details">
+                <p class="text-white">Loading customer details...</p>
+            </div>
 
             <!-- Payment Upload Form -->
             <form action="{{ url_for('customer.payment') }}" method="POST" enctype="multipart/form-data">
@@ -50,6 +50,12 @@
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
+                                <!-- Add the image here -->
+                                <div class="mb-3">
+                                    <img src="{{ url_for('static', filename='images/payment.jpg') }}" class="img-fluid rounded shadow mb-3" alt="Payment Image" style="width: 100%; max-width: 400px; height: auto;">
+
+                                </div>
+                
                                 <div class="mb-3">
                                     <label for="payment_ss" class="form-label">Select File</label>
                                     <input type="file" id="payment_ss" name="payment_ss" accept="image/*" class="form-control">
@@ -65,6 +71,7 @@
                         </div>
                     </div>
                 </div>
+                
 
                 <!-- Submit -->
                 <button type="submit" class="btn-confirm mt-3">Order Now</button>
@@ -75,6 +82,26 @@
 </div>
 
 <script>
+    // Fetch customer details from the API
+    fetch('/CraveOn/api/customer_details')
+        .then(response => response.json())
+        .then(data => {
+            const customerDetailsContainer = document.getElementById('customer-details');
+            if (data.message) {
+                customerDetailsContainer.innerHTML = `<p class="text-danger">${data.message}</p>`;
+            } else {
+                customerDetailsContainer.innerHTML = `
+                    <p class="text-white"><strong>Name:</strong> <span>${data.name}</span></p>
+                    <p class="text-white"><strong>Contact:</strong> <span>${data.contact}</span></p>
+                    <p class="text-white"><strong>Address:</strong> <span>${data.address}</span></p>
+                `;
+            }
+        })
+        .catch(error => {
+            const customerDetailsContainer = document.getElementById('customer-details');
+            customerDetailsContainer.innerHTML = `<p class="text-danger">Error fetching customer details</p>`;
+        });
+
     // Load cart data from sessionStorage and display
     const cartItemsContainer = document.getElementById('cart-items-container');
     const totalAmountDisplay = document.getElementById('total-amount');

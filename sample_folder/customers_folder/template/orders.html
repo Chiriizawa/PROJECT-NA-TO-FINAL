@@ -14,8 +14,8 @@
             <form id="orderForm" method="POST">
                 <div id="orderItemsContainer"></div>
                 <div class="border-top pt-2">
-                    <p class="total-amount text-end" id="totalAmountText">Total Amount: ₱0</p>
-                    <button type="button" class="btn-order" id="proceedPaymentBtn">PROCEED TO PAYMENT</button>
+                    <p class="total-amount text-start fw-bold" id="totalAmountText">Total Amount: ₱0</p>
+                    <button type="button" class="btn-order w-100" id="proceedPaymentBtn">PROCEED TO PAYMENT</button>
                 </div>                    
             </form>
         </div>
@@ -34,7 +34,7 @@
             let total = 0;
 
             if (cartItems.length === 0) {
-                container.innerHTML = "<p>Your order is empty.</p>";
+                container.innerHTML = "<p class='text-light'>Your order is empty.</p>";
                 totalAmountText.textContent = `Total Amount: ₱0`;
                 return;
             }
@@ -45,16 +45,21 @@
 
                 container.innerHTML += `
                     <div class="cart-item mb-3" data-index="${index}">
-                        <div class="item-info d-flex align-items-center">
-                            <img class="item-image me-3" src="${item.image_url}" alt="${item.name}" style="width: 60px; height: 60px;">
-                            <div class="d-flex flex-column">
-                                <div class="d-flex align-items-center mb-1">
-                                    <strong class="me-2">${item.name}</strong>
-                                    <button class="btn btn-sm btn-outline-light me-1 qty-btn" data-index="${index}" data-action="decrease">-</button>
-                                    <span>${item.quantity}</span>
-                                    <button class="btn btn-sm btn-outline-light ms-1 qty-btn" data-index="${index}" data-action="increase">+</button>
+                        <div class="item-info d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <img class="item-image me-3" src="${item.image_url}" alt="${item.name}" style="width: 60px; height: 60px;">
+                                <div class="d-flex flex-column">
+                                    <strong class="text-light">${item.name}</strong>
+                                    <small class="text-light">₱${item.quantity} x ₱${item.price} = ₱${subtotal.toFixed(2)}</small>
                                 </div>
-                                <small class="text-muted">₱${item.quantity} x ₱${item.price} = ₱${subtotal.toFixed(2)}</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-sm btn-outline-light me-1 qty-btn" data-index="${index}" data-action="decrease">-</button>
+                                <span class="text-light mx-2">${item.quantity}</span>
+                                <button class="btn btn-sm btn-outline-light ms-1 qty-btn" data-index="${index}" data-action="increase">+</button>
+                                <button class="btn btn-sm btn-danger ms-3 remove-btn" data-index="${index}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                     </div>`;
@@ -74,8 +79,17 @@
                 } else if (action === "decrease" && cartItems[index].quantity > 1) {
                     cartItems[index].quantity -= 1;
                 }
-
                 renderCart();
+            }
+
+            if (e.target.classList.contains("remove-btn") || e.target.closest('.remove-btn')) {
+                const button = e.target.closest('.remove-btn');
+                const index = parseInt(button.getAttribute("data-index"));
+
+                if (confirm("Are you sure you want to remove this item?")) {
+                    cartItems.splice(index, 1);
+                    renderCart();
+                }
             }
         });
 

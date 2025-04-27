@@ -2,24 +2,46 @@
 
 {% block head %}
     <title>Crave On - Menu</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/customer/menu.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/customer/menu.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 {% endblock %}
 
 {% block content %}
-<!-- Background Container -->
 <div class="bg-container">
     <div class="container-fluid menu-container my-5">
         <div class="container mt-5">
-            <div class="row">
+
+            <!-- Categories + Search Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                <div class="d-flex align-items-center flex-wrap">
+                    <div class="btn-group" role="group" id="category-list" style="flex-wrap: nowrap;">
+                        <button type="button" class="btn btn-outline-dark active" onclick="filterCategory('all', this)">All</button>
+                        {% for category in categories %}
+                            <button type="button" class="btn btn-outline-dark" onclick="filterCategory('{{ category[1] }}', this)">{{ category[1] }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <div class="input-group" style="max-width: 265px;">
+                        <input type="text" id="search-input" class="form-control" placeholder="Search items...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Items -->
+            <div class="row" id="menu-items">
                 {% for item in items %}
-                <div class="col-lg-3 col-md-4 col-sm-6 mb-4" id="item-{{ loop.index }}" data-category="{{ item[3] }}">
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4 item-card" 
+                     id="item-{{ loop.index }}" 
+                     data-name="{{ item[1] }}" 
+                     data-category="{{ item[4] }}">
                     <div class="card shadow-sm h-100">
                         {% if item[3] %}
                             <img src="data:image/jpeg;base64,{{ item[3] }}" class="card-img-top" alt="{{ item[1] }}">
                         {% else %}
-                            <img src="#" class="card-img-top" alt="Default Image">
+                            <img src="{{ url_for('static', filename='default-image.jpg') }}" class="card-img-top" alt="Default Image">
                         {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ item[1] }}</h5>
@@ -28,12 +50,10 @@
                                 <span class="fw-bold">₱{{ item[2] }}</span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
-                                <!-- Add to Cart Button -->
                                 <button class="btn btn-primary btn-sm px-3" 
                                     onclick="addToCart('{{ item[1] }}', '{{ item[2] }}', 'data:image/jpeg;base64,{{ item[3] }}')">
                                     <i class="fas fa-plus me-1"></i> ADD
                                 </button>
-                                <!-- Buy Now Button -->
                                 <button class="btn btn-success btn-sm px-3" 
                                     onclick="buyNow('{{ item[1] }}', '{{ item[2] }}', 'data:image/jpeg;base64,{{ item[3] }}')">
                                     <i class="fas fa-shopping-cart me-1"></i> BUY
@@ -46,12 +66,15 @@
                     <p class="text-center">No items available.</p>
                 {% endfor %}
             </div>
+
         </div>
     </div>
 
-    <!-- Cart Section -->
+    <!-- Cart Sidebar -->
     <div class="cart-container p-3 shadow-sm border-0" id="cart-container">
-        <button id="btn-minimize" class="btn-minimize" onclick="toggleCart()"><i class="fa-solid fa-window-minimize"></i></button>
+        <button id="btn-minimize" class="btn-minimize" onclick="toggleCart()">
+            <i class="fa-solid fa-window-minimize"></i>
+        </button>
         <div id="cart-content">
             <h5 class="fw-bold mb-3">Items</h5>
             <div id="cart-items">
@@ -63,12 +86,13 @@
             </div>
             <form id="checkout-form" action="{{ url_for('customer.orders') }}" method="POST">
                 <div id="cart-inputs"></div>
-                <button type="submit" class="btn btn-success">Checkout</button>
+                <button type="submit" class="btn btn-success w-100 mt-2">Checkout</button>
             </form>
         </div>
     </div>
 </div>
 
+<!-- Scripts -->
 <script>
     let cart = loadCartFromLocalStorage() || {};
 
@@ -115,12 +139,11 @@
                     <div class="d-flex align-items-center">
                         <img src="${item.image}" alt="${name}" style="width: 40px; height: 40px; margin-right: 10px;">
                         <span>${name}</span>
-                        <small class="ms-2">₱${item.price * item.quantity}.00</small>
+                        <small class="ms-2">₱${item.price * item.quantity}</small>
                     </div>
                     <div class="d-flex align-items-center">
                         <button class="btn btn-sm btn-outline-secondary" onclick="removeFromCart('${name}')">-</button>
-                        <input type="number" class="form-control text-center mx-1" style="width: 50px;" 
-                            value="${item.quantity}" onchange="updateQuantity('${name}', this.value)">
+                        <input type="number" class="form-control text-center mx-1" style="width: 50px;" value="${item.quantity}" onchange="updateQuantity('${name}', this.value)">
                         <button class="btn btn-sm btn-outline-secondary me-3" onclick="addToCart('${name}', ${item.price}, '${item.image}')">+</button>
                         <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteItem('${name}')">×</button>
                     </div>
@@ -136,6 +159,17 @@
 
     function deleteItem(name) {
         delete cart[name];
+        saveCartToLocalStorage();
+        renderCart();
+    }
+
+    function removeFromCart(name) {
+        if (cart[name]) {
+            cart[name].quantity -= 1;
+            if (cart[name].quantity <= 0) {
+                delete cart[name];
+            }
+        }
         saveCartToLocalStorage();
         renderCart();
     }
@@ -168,9 +202,8 @@
         cartInputs.innerHTML += `<input type="hidden" name="cart_length" value="${index}">`;
     }
 
-    // ✅ Clear cart after form submission
     document.getElementById("checkout-form").addEventListener("submit", function (e) {
-        e.preventDefault(); // Prevent traditional form submit
+        e.preventDefault();
 
         const cartItems = [];
         for (const [name, item] of Object.entries(cart)) {
@@ -182,22 +215,31 @@
             });
         }
 
-        // Save cart items to sessionStorage
         sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
-
-        // Optional: clear cart from memory/localStorage
         cart = {};
         saveCartToLocalStorage();
-
-        // Redirect to orders page
         window.location.href = "{{ url_for('customer.orders') }}";
     });
 
     document.addEventListener("DOMContentLoaded", function () {
         renderCart();
+
+        // Live search
+        document.getElementById('search-input').addEventListener('input', function() {
+            const input = this.value.toLowerCase();
+            const items = document.querySelectorAll('.item-card');
+
+            items.forEach(item => {
+                const itemName = item.getAttribute('data-name').toLowerCase();
+                if (itemName.includes(input)) {
+                    item.style.display = "block";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        });
     });
 
-    // ✅ Updated BUY NOW function
     function buyNow(name, price, image) {
         const cartItems = [{
             name: name,
@@ -205,14 +247,29 @@
             quantity: 1,
             image_url: image
         }];
-
         sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
-
         window.location.href = "{{ url_for('customer.orders') }}";
     }
+
+    function filterCategory(category, element) {
+        const items = document.querySelectorAll('.item-card');
+        items.forEach(item => {
+            if (category === 'all' || item.getAttribute('data-category').toLowerCase() === category.toLowerCase()) {
+                item.style.display = "block";
+            } else {
+                item.style.display = "none";
+            }
+        });
+
+        document.querySelectorAll('#category-list .btn').forEach(button => {
+            button.classList.remove('active');
+        });
+        element.classList.add('active');
+    }
+
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
-<script src="{{url_for('static', filename = 'js/menu.js')}}"></script>
+<script src="{{ url_for('static', filename='js/menu.js') }}"></script>
 {% endblock %}
