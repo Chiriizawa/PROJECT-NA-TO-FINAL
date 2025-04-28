@@ -14,18 +14,22 @@
             <h2 class="text-white mb-4 text-center">Order Summary</h2>
 
             <!-- Item List -->
-            <div class="item-list" id="cart-items-container">
-                <!-- JS will inject items here -->
-            </div>
+            <div class="item-list" id="cart-items-container"></div>
 
             <!-- Total Amount -->
-            <div class="border-top pt-2 text-end">
-                <p class="total-amount fw-bold" id="total-amount">Total Amount: ₱0.00</p>
+            <!-- Total Amount -->
+            <div class="border-top pt-2">
+                <div class="d-flex justify-content-between text-white fw-bold">
+                    <span>Total Amount:</span>
+                    <span id="total-amount">₱0.00</span>
+                </div>
             </div>
+
 
             <!-- Customer Details -->
             <h4 class="text-white mt-4">Customer Details</h4>
-            <div id="customer-details">
+            <div id="customer-details" class="bg-dark p-3 rounded shadow-sm mb-4">
+                <!-- JS will fill this dynamically -->
                 <p class="text-white">Loading customer details...</p>
             </div>
 
@@ -50,12 +54,9 @@
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
-                                <!-- Add the image here -->
                                 <div class="mb-3">
                                     <img src="{{ url_for('static', filename='images/payment.jpg') }}" class="img-fluid rounded shadow mb-3" alt="Payment Image" style="width: 100%; max-width: 400px; height: auto;">
-
                                 </div>
-                
                                 <div class="mb-3">
                                     <label for="payment_ss" class="form-label">Select File</label>
                                     <input type="file" id="payment_ss" name="payment_ss" accept="image/*" class="form-control">
@@ -71,79 +72,77 @@
                         </div>
                     </div>
                 </div>
-                
 
-                <!-- Submit -->
+                <!-- Submit Order -->
                 <button type="submit" class="btn-confirm mt-3">Order Now</button>
             </form>
-
         </div>
     </div>
 </div>
 
 <script>
-    // Fetch customer details from the API
-    fetch('/CraveOn/api/customer_details')
-        .then(response => response.json())
-        .then(data => {
-            const customerDetailsContainer = document.getElementById('customer-details');
-            if (data.message) {
-                customerDetailsContainer.innerHTML = `<p class="text-danger">${data.message}</p>`;
-            } else {
-                customerDetailsContainer.innerHTML = `
-                    <p class="text-white"><strong>Name:</strong> <span>${data.name}</span></p>
-                    <p class="text-white"><strong>Contact:</strong> <span>${data.contact}</span></p>
-                    <p class="text-white"><strong>Address:</strong> <span>${data.address}</span></p>
-                `;
-            }
-        })
-        .catch(error => {
-            const customerDetailsContainer = document.getElementById('customer-details');
-            customerDetailsContainer.innerHTML = `<p class="text-danger">Error fetching customer details</p>`;
-        });
+// Load cart items
+const cartItemsContainer = document.getElementById('cart-items-container');
+const totalAmountDisplay = document.getElementById('total-amount');
+const hiddenTotalAmountInput = document.getElementById('hidden-total-amount');
 
-    // Load cart data from sessionStorage and display
-    const cartItemsContainer = document.getElementById('cart-items-container');
-    const totalAmountDisplay = document.getElementById('total-amount');
-    const hiddenTotalAmountInput = document.getElementById('hidden-total-amount');
+const cartData = JSON.parse(sessionStorage.getItem('cart_items')) || [];
+let totalAmount = 0;
 
-    const cartData = JSON.parse(sessionStorage.getItem('cart_items')) || [];
-    let totalAmount = 0;
+cartData.forEach(item => {
+    const itemRow = document.createElement('div');
+    itemRow.classList.add('item-row', 'd-flex', 'justify-content-between', 'text-white', 'mb-2');
 
-    cartData.forEach(item => {
-        const itemRow = document.createElement('div');
-        itemRow.classList.add('item-row', 'd-flex', 'justify-content-between', 'text-white', 'mb-2');
+    const nameQty = document.createElement('span');
+    nameQty.textContent = `${item.name} (x${item.quantity})`;
 
-        const nameQty = document.createElement('span');
-        nameQty.textContent = `${item.name} (x${item.quantity})`;
+    const price = document.createElement('span');
+    const subtotal = item.price * item.quantity;
+    price.textContent = `₱${subtotal.toFixed(2)}`;
 
-        const price = document.createElement('span');
-        const subtotal = item.price * item.quantity;
-        price.textContent = `₱${subtotal.toFixed(2)}`;
+    totalAmount += subtotal;
 
-        totalAmount += subtotal;
+    itemRow.appendChild(nameQty);
+    itemRow.appendChild(price);
+    cartItemsContainer.appendChild(itemRow);
+});
 
-        itemRow.appendChild(nameQty);
-        itemRow.appendChild(price);
-        cartItemsContainer.appendChild(itemRow);
-    });
+totalAmountDisplay.textContent = `₱${totalAmount.toFixed(2)}`;
+hiddenTotalAmountInput.value = totalAmount.toFixed(2);
 
-    totalAmountDisplay.textContent = `Total Amount: ₱${totalAmount.toFixed(2)}`;
-    hiddenTotalAmountInput.value = totalAmount.toFixed(2);
-
-    // File preview for payment_ss
-    document.getElementById('payment_ss').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('previewImg').src = e.target.result;
-                document.getElementById('imagePreview').style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-            document.getElementById('checkIcon').style.display = 'block';
+// Fetch customer details
+fetch('/CraveOn/api/customer_details')
+    .then(response => response.json())
+    .then(data => {
+        const customerDetails = document.getElementById('customer-details');
+        if (data.message) {
+            customerDetails.innerHTML = `<p class="text-danger">${data.message}</p>`;
+        } else {
+            customerDetails.innerHTML = `
+                <p class="text-white mb-1"><strong>Name:</strong> ${data.name}</p>
+                <p class="text-white mb-1"><strong>Email:</strong> ${data.email}</p>
+                <p class="text-white mb-1"><strong>Contact:</strong> ${data.contact}</p>
+                <p class="text-white mb-0"><strong>Address:</strong> ${data.address}</p>
+            `;
         }
+    })
+    .catch(error => {
+        console.error('Error fetching customer details:', error);
+        document.getElementById('customer-details').innerHTML = `<p class="text-danger">Failed to load customer details.</p>`;
     });
-</script>
 
+// File preview
+document.getElementById('payment_ss').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('imagePreview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+        document.getElementById('checkIcon').style.display = 'block';
+    }
+});
+</script>
 {% endblock %}

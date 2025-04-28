@@ -34,7 +34,8 @@ def index():
     connection = connect_db()
     cursor = connection.cursor()
     
-    cursor.execute("SELECT SUM(total_amount) FROM orders")
+    # Only sum orders where status is 'Approved'
+    cursor.execute("SELECT SUM(total_amount) FROM orders WHERE order_status = 'Approved'")
     total_sales = cursor.fetchone()[0] or 0 
 
     cursor.execute("SELECT COUNT(*) FROM customer")
@@ -49,6 +50,7 @@ def index():
         total_customers=total_customers,
     ))
     return response
+
 
 @admin.route('/login', methods=['GET', 'POST'])
 def login():
