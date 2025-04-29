@@ -11,6 +11,7 @@
 <div class="bg-container">
     <div class="col-md-8 mx-auto mt-4">
         <div class="cart-container">
+            
             <form id="orderForm" method="POST">
                 <div id="orderItemsContainer"></div>
                 <div class="border-top pt-2">
@@ -103,8 +104,36 @@
                 return;
             }
 
-            sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
-            window.location.href = "{{ url_for('customer.payment') }}";
+            // Prepare the order data
+            let orderData = {
+                cart_items: cartItems.map(item => ({
+                    item_id: item.item_id,  // Ensure item_id is included
+                    quantity: item.quantity
+                }))
+            };
+            
+            fetch("/CraveOn/api/insert_item", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === "Order items inserted successfully!") {
+                    sessionStorage.setItem('cart_items', JSON.stringify([])); // Clear the cart after successful order
+                    window.location.href = "{{ url_for('customer.payment') }}"; // Redirect to payment page
+                } else {
+                    alert("Error: " + data.error + "\n\n" + data.trace); // Display error and trace details
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("An unexpected error occurred while processing your order.");
+            });
+            
+            
         });
     });
 </script>

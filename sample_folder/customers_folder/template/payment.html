@@ -13,11 +13,8 @@
         <div class="payment-container">
             <h2 class="text-white mb-4 text-center">Order Summary</h2>
 
-            <!-- Item List -->
             <div class="item-list" id="cart-items-container"></div>
 
-            <!-- Total Amount -->
-            <!-- Total Amount -->
             <div class="border-top pt-2">
                 <div class="d-flex justify-content-between text-white fw-bold">
                     <span>Total Amount:</span>
@@ -25,55 +22,36 @@
                 </div>
             </div>
 
+            <!-- Display the items below the order summary -->
+            <h4 class="text-white mt-4">Items in Your Order</h4>
+            <div id="order-items-list" class="bg-dark p-3 rounded shadow-sm mb-4">
+                <!-- Items will be dynamically added here -->
+            </div>
 
-            <!-- Customer Details -->
             <h4 class="text-white mt-4">Customer Details</h4>
             <div id="customer-details" class="bg-dark p-3 rounded shadow-sm mb-4">
-                <!-- JS will fill this dynamically -->
                 <p class="text-white">Loading customer details...</p>
             </div>
 
-            <!-- Payment Upload Form -->
-            <form action="{{ url_for('customer.payment') }}" method="POST" enctype="multipart/form-data">
+            <!-- Recent Orders Section -->
+            <h4 class="text-white mt-4">Recent Orders</h4>
+            <div id="recent-orders-container" class="bg-dark p-3 rounded shadow-sm mb-4">
+                <p class="text-white">Loading recent orders...</p>
+            </div>
+
+            <form id="payment-form" enctype="multipart/form-data">
                 <input type="hidden" name="total_amount" id="hidden-total-amount" value="">
+
+                <div class="mb-3">
+                    <img src="{{ url_for('static', filename='images/payment.jpg') }}" class="img-fluid rounded shadow mb-3" alt="Payment Image" style="width: 100%; max-width: 400px; height: auto;">
+                </div>
 
                 <h5 class="text-white mt-2 mb-1">Payment Proof</h5>
 
-                <!-- Upload Button + Check Icon -->
-                <button type="button" class="btn btn-info mb-1" data-bs-toggle="modal" data-bs-target="#uploadModal">
-                    Upload Payment Proof
-                </button>
-                <i id="checkIcon" class="fas fa-check-circle text-success ms-2" style="display: none; font-size: 20px;"></i>
-
-                <!-- Modal -->
-                <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content bg-dark text-white">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Upload Proof of Payment</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <img src="{{ url_for('static', filename='images/payment.jpg') }}" class="img-fluid rounded shadow mb-3" alt="Payment Image" style="width: 100%; max-width: 400px; height: auto;">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="payment_ss" class="form-label">Select File</label>
-                                    <input type="file" id="payment_ss" name="payment_ss" accept="image/*" class="form-control">
-                                </div>
-                                <div id="imagePreview" style="display:none;">
-                                    <img id="previewImg" src="#" class="img-fluid rounded shadow" alt="Preview">
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
-                            </div>
-                        </div>
-                    </div>
+                <div class="mb-3">
+                    <input type="file" id="payment_ss" name="payment_ss" accept="image/*" class="form-control" required>
                 </div>
 
-                <!-- Submit Order -->
                 <button type="submit" class="btn-confirm mt-3">Order Now</button>
             </form>
         </div>
@@ -81,68 +59,139 @@
 </div>
 
 <script>
-// Load cart items
+// === 1. Load Cart Data ===
+const cartData = JSON.parse(sessionStorage.getItem('cart_items')) || [];
 const cartItemsContainer = document.getElementById('cart-items-container');
 const totalAmountDisplay = document.getElementById('total-amount');
 const hiddenTotalAmountInput = document.getElementById('hidden-total-amount');
+const orderItemsList = document.getElementById('order-items-list');
 
-const cartData = JSON.parse(sessionStorage.getItem('cart_items')) || [];
 let totalAmount = 0;
 
+// Display items in the "Order Items" section below the order summary
 cartData.forEach(item => {
-    const itemRow = document.createElement('div');
-    itemRow.classList.add('item-row', 'd-flex', 'justify-content-between', 'text-white', 'mb-2');
-
-    const nameQty = document.createElement('span');
-    nameQty.textContent = `${item.name} (x${item.quantity})`;
-
-    const price = document.createElement('span');
     const subtotal = item.price * item.quantity;
-    price.textContent = `₱${subtotal.toFixed(2)}`;
-
     totalAmount += subtotal;
 
-    itemRow.appendChild(nameQty);
-    itemRow.appendChild(price);
-    cartItemsContainer.appendChild(itemRow);
+    const row = document.createElement('div');
+    row.className = 'item-row d-flex justify-content-between text-white mb-2';
+    row.innerHTML = `<span>${item.name} (x${item.quantity})</span><span>₱${subtotal.toFixed(2)}</span>`;
+    cartItemsContainer.appendChild(row);
+
+    // Add to the "Items in Your Order" list below
+    const itemRow = document.createElement('div');
+    itemRow.className = 'order-item text-white mb-2';
+    itemRow.innerHTML = `<h6>${item.name}</h6><p>Quantity: ${item.quantity}</p><p>Price: ₱${item.price.toFixed(2)}</p><p>Total: ₱${subtotal.toFixed(2)}</p>`;
+    orderItemsList.appendChild(itemRow);
 });
 
 totalAmountDisplay.textContent = `₱${totalAmount.toFixed(2)}`;
 hiddenTotalAmountInput.value = totalAmount.toFixed(2);
 
-// Fetch customer details
-fetch('/CraveOn/api/customer_details')
+fetch('/CraveOn/api/recent_orders')
     .then(response => response.json())
     .then(data => {
-        const customerDetails = document.getElementById('customer-details');
+        console.log("Recent orders data:", data); // Log the response data
+        const div = document.getElementById('recent-orders-container');
+        
+        // If the API response contains an error message (like 'No recent orders found')
         if (data.message) {
-            customerDetails.innerHTML = `<p class="text-danger">${data.message}</p>`;
+            div.innerHTML = `<p class="text-danger">${data.message}</p>`;
         } else {
-            customerDetails.innerHTML = `
+            // If no orders found, display a message
+            if (data.length === 0) {
+                div.innerHTML = `<p class="text-white">No recent orders found.</p>`;
+            } else {
+                let ordersHTML = '';
+                
+                // Iterate through the orders and create HTML for each one
+                data.forEach(order => {
+                    ordersHTML += `
+                        <div class="order-item text-white mb-2">
+                            <p class="text-white mb-1"><strong>Item Name:</strong> ${order.item_name}</p>
+                            <p class="text-white mb-1"><strong>Quantity:</strong> ${order.quantity}</p>
+                            <p class="text-white mb-1"><strong>Total Price:</strong> ₱${order.total_price.toFixed(2)}</p>
+                        </div>`;
+                });
+                
+                // Add the generated HTML to the div
+                div.innerHTML = ordersHTML;
+            }
+        }
+    })
+    .catch(err => {
+        // Handle error if fetch fails
+        document.getElementById('recent-orders-container').innerHTML = `<p class="text-danger">Failed to load recent orders.</p>`;
+        console.error('Recent orders fetch error:', err);
+    });
+
+// === 2. Load Customer Details ===
+fetch('/CraveOn/api/customer_details')
+    .then(res => res.json())
+    .then(data => {
+        const div = document.getElementById('customer-details');
+        if (data.message) {
+            div.innerHTML = `<p class="text-danger">${data.message}</p>`;
+        } else {
+            div.innerHTML = `
                 <p class="text-white mb-1"><strong>Name:</strong> ${data.name}</p>
                 <p class="text-white mb-1"><strong>Email:</strong> ${data.email}</p>
                 <p class="text-white mb-1"><strong>Contact:</strong> ${data.contact}</p>
-                <p class="text-white mb-0"><strong>Address:</strong> ${data.address}</p>
-            `;
+                <p class="text-white mb-0"><strong>Address:</strong> ${data.address}</p>`;
         }
     })
-    .catch(error => {
-        console.error('Error fetching customer details:', error);
+    .catch(err => {
         document.getElementById('customer-details').innerHTML = `<p class="text-danger">Failed to load customer details.</p>`;
+        console.error('Customer detail fetch error:', err);
     });
 
-// File preview
-document.getElementById('payment_ss').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('previewImg').src = e.target.result;
-            document.getElementById('imagePreview').style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-        document.getElementById('checkIcon').style.display = 'block';
+// === 3. Load Recent Orders ===
+
+
+// === 4. Form Submission ===
+document.getElementById('payment-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const fileInput = document.getElementById('payment_ss');
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("Please upload a payment screenshot.");
+        return;
     }
+
+    const reader = new FileReader();
+    reader.onloadend = function() {
+        const base64Screenshot = reader.result.split(',')[1];
+
+        const requestData = {
+            total_amount: totalAmount,
+            payment_ss: base64Screenshot
+        };
+
+        console.log("Submitting Order:", requestData);  // Debug line
+
+        fetch('/CraveOn/api/insert_order', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(requestData)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("Order placed successfully!");
+                sessionStorage.removeItem('cart_items');
+                window.location.href = "/CraveOn/thankyou";
+            } else {
+                alert("Order failed: " + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Order submission error:', error);
+            alert("Something went wrong placing your order.");
+        });
+    };
+
+    reader.readAsDataURL(file);
 });
 </script>
 {% endblock %}

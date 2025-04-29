@@ -452,6 +452,45 @@ def orders():
 
     return render_template('orders.html', cart_items=cart_items, total_amount=total_amount, users=users)
 
+import traceback
+
+@customer.route('/api/insert_item', methods=['POST'])
+def insert_item():
+    try:
+        # Retrieve cart items from the incoming request
+        cart_items = request.json.get('cart_items', [])
+        if not cart_items:
+            return jsonify({"message": "Cart is empty."}), 400
+
+        connection = connect_db()
+        cursor = connection.cursor()
+
+        # Insert each cart item into the order_item table
+        for item in cart_items:
+            item_id = item['item_id']
+            quantity = item['quantity']
+            
+            # Insert the item into the order_item table
+            cursor.execute("""
+                INSERT INTO order_item (item_id, quantity)
+                VALUES (%s, %s)
+            """, (item_id, quantity))
+
+        connection.commit()
+        connection.close()
+
+        return jsonify({"message": "Order items inserted successfully!"}), 200
+
+    except Exception as e:
+        # Log the error message and stack trace
+        print("Error occurred:", str(e))
+        print("Stack trace:", traceback.format_exc())
+
+        connection.rollback()
+        connection.close()
+        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
+
+
 @customer.route('/Payment', methods=['GET', 'POST'])
 def payment():
     if 'user' not in session:
@@ -460,9 +499,11 @@ def payment():
     connection = connect_db()
     cursor = connection.cursor(dictionary=True)
 
+    # Fetch customer details
     cursor.execute("SELECT customer_id, name, email, contact, address FROM customer WHERE customer_id = %s ORDER BY customer_id DESC LIMIT 1", (session['user'],))
     user = cursor.fetchone()
 
+    # Fetch cart items from session
     cart_items = session.get('cart_items', [])
     total_amount = sum(item['price'] * item['quantity'] for item in cart_items)
 
@@ -476,14 +517,17 @@ def payment():
         return render_template('payment.html', cart_items=[], total_amount=0, user=user, message=message, message_type=message_type)
 
     if request.method == 'POST':
+        # Get payment screenshot
         payment_file = request.files.get('payment_ss')
         if not payment_file or payment_file.filename == '':
             message = "Payment screenshot is required."
             message_type = "danger"
             return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user, message=message, message_type=message_type)
 
+        # Read the payment screenshot file
         payment_ss = payment_file.read()
 
+        # Insert order into the 'orders' table for each cart item
         for item in cart_items:
             item_id = item.get('item_id') or item.get('id')
             quantity = item['quantity']
@@ -496,19 +540,23 @@ def payment():
                 item_id,
                 quantity,
                 total_amount,
-                'Pending',
-                payment_ss
+                'Pending',  # Order status is initially 'Pending'
+                payment_ss  # Storing the payment screenshot as binary data
             ))
 
+        # Commit the changes to the database
         connection.commit()
         connection.close()
 
+        # Clear the cart items from session after the order is placed
         session['cart_items'] = []
 
-        return redirect(url_for('customer.myorder', message="Order placed successfully!", message_type="success"))
+        # Redirect to Thank You page
+        return redirect(url_for('customer.thankyou'))
 
     connection.close()
     return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user, message=message, message_type=message_type)
+
 
 @customer.route('/api/customer_details', methods=['GET'])
 def api_customer_details():
@@ -527,6 +575,38 @@ def api_customer_details():
         return jsonify({'message': 'User not found'}), 404
 
     return jsonify(user)
+
+import base64
+
+@customer.route('/api/recent_orders', methods=['GET'])
+def recent_orders():
+    if 'user' not in session:
+        return jsonify({'message': 'User not logged in'}), 401
+
+    # Connect to the database
+    connection = connect_db()
+    cursor = connection.cursor(dictionary=True)
+
+    # Fetch the most recent orders for the logged-in customer
+    cursor.execute("""
+    SELECT oi.item_id, i.item_name, oi.quantity, i.price, 
+           (oi.quantity * i.price) AS total_price
+    FROM order_item oi
+    JOIN items i ON oi.item_id = i.item_id
+    ORDER BY oi.order_item_id DESC
+    LIMIT 5
+""")
+
+    recent_orders = cursor.fetchall()
+
+    connection.close()
+
+    if not recent_orders:
+        return jsonify({'message': 'No recent orders found'}), 404
+
+    # Return the recent orders in JSON format
+    return jsonify(recent_orders)
+
 
 @customer.route('/MyOrders', methods=['GET'])
 def myorder():

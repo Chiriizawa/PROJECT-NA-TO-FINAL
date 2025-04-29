@@ -51,11 +51,11 @@
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <button class="btn btn-primary btn-sm px-3" 
-                                    onclick="addToCart('{{ item[1] }}', '{{ item[2] }}', 'data:image/jpeg;base64,{{ item[3] }}')">
+                                    onclick="addToCart('{{ item[0] }}', '{{ item[1] }}', '{{ item[2] }}', 'data:image/jpeg;base64,{{ item[3] }}')">
                                     <i class="fas fa-plus me-1"></i> ADD
                                 </button>
                                 <button class="btn btn-success btn-sm px-3" 
-                                    onclick="buyNow('{{ item[1] }}', '{{ item[2] }}', 'data:image/jpeg;base64,{{ item[3] }}')">
+                                    onclick="buyNow('{{ item[0] }}', '{{ item[1] }}', '{{ item[2] }}', 'data:image/jpeg;base64,{{ item[3] }}')">
                                     <i class="fas fa-shopping-cart me-1"></i> BUY
                                 </button>
                             </div>
@@ -92,7 +92,6 @@
     </div>
 </div>
 
-<!-- Scripts -->
 <script>
     let cart = loadCartFromLocalStorage() || {};
 
@@ -117,69 +116,86 @@
         }
     }
 
-    function addToCart(name, price, image) {
-        if (cart[name]) {
-            cart[name].quantity += 1;
+    function addToCart(item_id, name, price, image) {
+        if (cart[item_id]) {
+            cart[item_id].quantity += 1;
         } else {
-            cart[name] = { price, quantity: 1, image };
+            cart[item_id] = { item_id, price, quantity: 1, image, name };  // Add item_id explicitly
         }
         saveCartToLocalStorage();
         renderCart();
+    
+        // API Call for inserting item into the cart
+        fetch('/CraveOn/api/insert_item', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart_items: [{ item_id, name, price, quantity: cart[item_id].quantity, image }] })  // Ensure item_id is included
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.message) {
+                alert("Error adding item: " + data.error);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while adding to cart.");
+        });
     }
-
+    
     function renderCart() {
         const cartItems = document.getElementById("cart-items");
         cartItems.innerHTML = "";
         let subTotal = 0;
 
-        for (const [name, item] of Object.entries(cart)) {
+        for (const [item_id, item] of Object.entries(cart)) {
             subTotal += item.price * item.quantity;
             cartItems.innerHTML += `
                 <div class="cart-item d-flex justify-content-between align-items-center mb-2">
                     <div class="d-flex align-items-center">
-                        <img src="${item.image}" alt="${name}" style="width: 40px; height: 40px; margin-right: 10px;">
-                        <span>${name}</span>
+                        <img src="${item.image}" alt="${item.name}" style="width: 40px; height: 40px; margin-right: 10px;">
+                        <span>${item.name}</span>
                         <small class="ms-2">₱${item.price * item.quantity}</small>
                     </div>
                     <div class="d-flex align-items-center">
-                        <button class="btn btn-sm btn-outline-secondary" onclick="removeFromCart('${name}')">-</button>
-                        <input type="number" class="form-control text-center mx-1" style="width: 50px;" value="${item.quantity}" onchange="updateQuantity('${name}', this.value)">
-                        <button class="btn btn-sm btn-outline-secondary me-3" onclick="addToCart('${name}', ${item.price}, '${item.image}')">+</button>
-                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteItem('${name}')">×</button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="removeFromCart('${item_id}')">-</button>
+                        <input type="number" class="form-control text-center mx-1" style="width: 50px;" value="${item.quantity}" onchange="updateQuantity('${item_id}', this.value)">
+                        <button class="btn btn-sm btn-outline-secondary me-3" onclick="addToCart('${item_id}', '${item.name}', ${item.price}, '${item.image}')">+</button>
+                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteItem('${item_id}')">×</button>
                     </div>
                 </div>`;
         }
 
-        document.getElementById("total-amount").textContent = `₱${subTotal}`;
+        document.getElementById("total-amount").textContent = `₱${subTotal.toFixed(2)}`;
 
         if (Object.keys(cart).length === 0) {
             cartItems.innerHTML = `<p class="text-dark">Your cart is empty.</p>`;
         }
     }
 
-    function deleteItem(name) {
-        delete cart[name];
+    function deleteItem(item_id) {
+        delete cart[item_id];
         saveCartToLocalStorage();
         renderCart();
     }
 
-    function removeFromCart(name) {
-        if (cart[name]) {
-            cart[name].quantity -= 1;
-            if (cart[name].quantity <= 0) {
-                delete cart[name];
+    function removeFromCart(item_id) {
+        if (cart[item_id]) {
+            cart[item_id].quantity -= 1;
+            if (cart[item_id].quantity <= 0) {
+                delete cart[item_id];
             }
         }
         saveCartToLocalStorage();
         renderCart();
     }
 
-    function updateQuantity(name, quantity) {
+    function updateQuantity(item_id, quantity) {
         const qty = parseInt(quantity);
         if (qty <= 0) {
-            deleteItem(name);
+            deleteItem(item_id);
         } else {
-            cart[name].quantity = qty;
+            cart[item_id].quantity = qty;
         }
         saveCartToLocalStorage();
         renderCart();
@@ -190,9 +206,9 @@
         cartInputs.innerHTML = "";
 
         let index = 0;
-        for (const [name, item] of Object.entries(cart)) {
+        for (const [item_id, item] of Object.entries(cart)) {
             cartInputs.innerHTML += `
-                <input type="hidden" name="item_name_${index}" value="${name}">
+                <input type="hidden" name="item_name_${index}" value="${item.name}">
                 <input type="hidden" name="item_price_${index}" value="${item.price}">
                 <input type="hidden" name="item_quantity_${index}" value="${item.quantity}">
                 <input type="hidden" name="item_image_${index}" value="${item.image}">`;
@@ -203,23 +219,41 @@
     }
 
     document.getElementById("checkout-form").addEventListener("submit", function (e) {
-        e.preventDefault();
-
+        e.preventDefault();  // Prevent default form submission
+    
         const cartItems = [];
-        for (const [name, item] of Object.entries(cart)) {
+        for (const [item_id, item] of Object.entries(cart)) {
             cartItems.push({
-                name: name,
+                item_id: item_id,
+                name: item.name,
                 price: item.price,
                 quantity: item.quantity,
                 image_url: item.image
             });
         }
-
+    
+        // Store the cart items in sessionStorage
         sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
-        cart = {};
-        saveCartToLocalStorage();
-        window.location.href = "{{ url_for('customer.orders') }}";
+    
+        // Send a POST request to insert the items into the database
+        fetch('/CraveOn/api/insert_item', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart_items: cartItems })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                // Redirect to the orders page after successful insertion
+                window.location.href = "{{ url_for('customer.orders') }}";
+            } 
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while adding items to the order.");
+        });
     });
+    
 
     document.addEventListener("DOMContentLoaded", function () {
         renderCart();
@@ -240,36 +274,44 @@
         });
     });
 
-    function buyNow(name, price, image) {
+    function buyNow(item_id, item_name, price, image) {
         const cartItems = [{
-            name: name,
+            item_id: item_id,
+            name: item_name,
             price: parseFloat(price),
             quantity: 1,
             image_url: image
         }];
+    
+        // Store the item in sessionStorage
         sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
-        window.location.href = "{{ url_for('customer.orders') }}";
-    }
-
-    function filterCategory(category, element) {
-        const items = document.querySelectorAll('.item-card');
-        items.forEach(item => {
-            if (category === 'all' || item.getAttribute('data-category').toLowerCase() === category.toLowerCase()) {
-                item.style.display = "block";
+    
+        // Send a POST request to insert the item into the database
+        fetch('/CraveOn/api/insert_item', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cart_items: cartItems })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                // Redirect to the orders page after successful insertion
+                window.location.href = "{{ url_for('customer.orders') }}";
             } else {
-                item.style.display = "none";
+                alert("Error inserting item: " + data.error);
             }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred while adding to cart.");
         });
-
-        document.querySelectorAll('#category-list .btn').forEach(button => {
-            button.classList.remove('active');
-        });
-        element.classList.add('active');
     }
-
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 <script src="{{ url_for('static', filename='js/menu.js') }}"></script>
 {% endblock %}
+
