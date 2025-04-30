@@ -11,14 +11,51 @@
 <div class="bg-container">
     <div class="col-md-8 mx-auto mt-4">
         <div class="cart-container">
-            
+
+            <!-- Cart Order Form -->
             <form id="orderForm" method="POST">
                 <div id="orderItemsContainer"></div>
+                
                 <div class="border-top pt-2">
                     <p class="total-amount text-start fw-bold" id="totalAmountText">Total Amount: ₱0</p>
-                    <button type="button" class="btn-order w-100" id="proceedPaymentBtn">PROCEED TO PAYMENT</button>
+
+                    <!-- Customer Details -->
+                    <div class="bg-dark p-3 rounded shadow-sm mb-4" id="customer-details">
+                        <h5 class="text-white mb-3">Customer Information</h5>
+                        <p class="text-white">Loading customer details...</p>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="mb-3">
+                        <label for="uploadImage" class="form-label text-white">Upload Image (Optional)</label>
+                        <input class="form-control" type="file" id="uploadImage" name="upload_image" accept="image/*">
+                    </div>
+                    
+                    <button type="button" class="btn-order w-100" id="proceedPaymentBtn">Order Now</button>
                 </div>                    
             </form>
+
+            <!-- Modal for Order Confirmation -->
+            <div class="modal fade" id="orderConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="orderConfirmationModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="orderConfirmationModalLabel">Confirm Your Order</h5>
+                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure to this order?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="confirmOrderBtn">Order</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -27,114 +64,120 @@
     document.addEventListener("DOMContentLoaded", function () {
         const container = document.getElementById("orderItemsContainer");
         const totalAmountText = document.getElementById("totalAmountText");
-
-        let cartItems = JSON.parse(sessionStorage.getItem('cart_items')) || [];
-
-        function renderCart() {
+        const uploadImageInput = document.getElementById("uploadImage");  // File input for image upload
+    
+        let uploadImageFile = null;  // Initialize the variable for the uploaded file
+    
+        // Capture the uploaded image when the user selects a file
+        uploadImageInput.addEventListener('change', function (event) {
+            uploadImageFile = event.target.files[0];  // Capture the first selected file
+        });
+    
+        const orders = {{ items | tojson | safe }};
+    
+        function renderOrders(orders) {
             container.innerHTML = "";
             let total = 0;
-
-            if (cartItems.length === 0) {
-                container.innerHTML = "<p class='text-light'>Your order is empty.</p>";
+    
+            if (!Array.isArray(orders) || orders.length === 0) {
+                container.innerHTML = "<p class='text-light'>No recent orders found.</p>";
                 totalAmountText.textContent = `Total Amount: ₱0`;
                 return;
             }
-
-            cartItems.forEach((item, index) => {
+    
+            orders.forEach((item, index) => {
                 const subtotal = item.price * item.quantity;
                 total += subtotal;
-
+    
+                const imageSrc = item.image
+                    ? `data:image/jpeg;base64,${item.image}`
+                    : "{{ url_for('static', filename='images/no-image.png') }}";
+    
                 container.innerHTML += `
                     <div class="cart-item mb-3" data-index="${index}">
                         <div class="item-info d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
-                                <img class="item-image me-3" src="${item.image_url}" alt="${item.name}" style="width: 60px; height: 60px;">
+                                <img class="item-image me-3" src="${imageSrc}" alt="${item.name}" style="width: 60px; height: 60px;">
                                 <div class="d-flex flex-column">
                                     <strong class="text-light">${item.name}</strong>
                                     <small class="text-light">₱${item.quantity} x ₱${item.price} = ₱${subtotal.toFixed(2)}</small>
                                 </div>
                             </div>
-                            <div class="d-flex align-items-center">
-                                <button class="btn btn-sm btn-outline-light me-1 qty-btn" data-index="${index}" data-action="decrease">-</button>
-                                <span class="text-light mx-2">${item.quantity}</span>
-                                <button class="btn btn-sm btn-outline-light ms-1 qty-btn" data-index="${index}" data-action="increase">+</button>
-                                <button class="btn btn-sm btn-danger ms-3 remove-btn" data-index="${index}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
                         </div>
                     </div>`;
             });
-
+    
             totalAmountText.textContent = `Total Amount: ₱${total.toFixed(2)}`;
-            sessionStorage.setItem('cart_items', JSON.stringify(cartItems));
         }
-
-        container.addEventListener("click", function (e) {
-            if (e.target.classList.contains("qty-btn")) {
-                const index = parseInt(e.target.getAttribute("data-index"));
-                const action = e.target.getAttribute("data-action");
-
-                if (action === "increase") {
-                    cartItems[index].quantity += 1;
-                } else if (action === "decrease" && cartItems[index].quantity > 1) {
-                    cartItems[index].quantity -= 1;
-                }
-                renderCart();
-            }
-
-            if (e.target.classList.contains("remove-btn") || e.target.closest('.remove-btn')) {
-                const button = e.target.closest('.remove-btn');
-                const index = parseInt(button.getAttribute("data-index"));
-
-                if (confirm("Are you sure you want to remove this item?")) {
-                    cartItems.splice(index, 1);
-                    renderCart();
-                }
-            }
-        });
-
-        // Initial render
-        renderCart();
-
-        // Proceed to payment
-        document.getElementById('proceedPaymentBtn').addEventListener('click', function () {
-            if (cartItems.length === 0) {
-                alert("Order is empty!");
-                return;
-            }
-
-            // Prepare the order data
-            let orderData = {
-                cart_items: cartItems.map(item => ({
-                    item_id: item.item_id,  // Ensure item_id is included
-                    quantity: item.quantity
-                }))
-            };
-            
-            fetch("/CraveOn/api/insert_item", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(orderData)
-            })
-            .then(response => response.json())
+    
+        renderOrders(orders);
+    
+        // Fetch customer details
+        fetch('/CraveOn/api/customer_details')
+            .then(res => res.json())
             .then(data => {
-                if (data.message === "Order items inserted successfully!") {
-                    sessionStorage.setItem('cart_items', JSON.stringify([])); // Clear the cart after successful order
-                    window.location.href = "{{ url_for('customer.payment') }}"; // Redirect to payment page
+                const customerDetails = document.getElementById('customer-details');
+                if (data.message) {
+                    customerDetails.innerHTML = `<p class="text-danger">${data.message}</p>`;
                 } else {
-                    alert("Error: " + data.error + "\n\n" + data.trace); // Display error and trace details
+                    customerDetails.innerHTML = `
+                        <h5 class="text-white mb-3">Customer Information</h5>
+                        <p class="text-white mb-1"><strong>Name:</strong> ${data.name}</p>
+                        <p class="text-white mb-1"><strong>Email:</strong> ${data.email}</p>
+                        <p class="text-white mb-1"><strong>Contact:</strong> ${data.contact}</p>
+                        <p class="text-white mb-0"><strong>Address:</strong> ${data.address}</p>
+                    `;
                 }
             })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("An unexpected error occurred while processing your order.");
+            .catch(err => {
+                console.error('Customer fetch error:', err);
+                document.getElementById('customer-details').innerHTML = `<p class="text-danger">Failed to load customer details.</p>`;
             });
-            
-            
+    
+        // Order confirmation modal
+        document.getElementById('proceedPaymentBtn').addEventListener('click', function () {
+            const confirmationModal = new bootstrap.Modal(document.getElementById('orderConfirmationModal'));
+            confirmationModal.show();
         });
+    
+        document.getElementById('confirmOrderBtn').addEventListener('click', function () {
+    // Prepare the order data
+    const orderData = {
+        total_amount: parseFloat(totalAmountText.textContent.replace('Total Amount: ₱', '').replace(',', '')),
+        items: orders.map(item => ({
+            item_id: item.item_id,
+            quantity: item.quantity
+        })),
+    };
+
+    // Prepare FormData to send the request
+    const formData = new FormData();
+    formData.append("total_amount", orderData.total_amount);
+    formData.append("items", JSON.stringify(orderData.items));  // Items as JSON string
+    if (uploadImageFile) {
+        formData.append("payment_ss", uploadImageFile);  // Image file
+    }
+
+    // Send the order data to the backend
+    fetch('/CraveOn/api/create_order', {
+        method: 'POST',
+        body: formData  // Use FormData to send files and form data together
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = "{{ url_for('customer.thankyou') }}";  // Redirect to the thank you page
+        } else {
+            alert("Error creating order: " + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("Failed to create order.");
     });
+});
+
+    });
+    
 </script>
 {% endblock %}

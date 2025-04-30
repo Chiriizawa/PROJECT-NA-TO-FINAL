@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, render_template, request, flash, session, redirect, url_for, current_app, jsonify, make_response
+from flask import Flask, Blueprint, render_template, request, flash, session, redirect, url_for, current_app, jsonify, make_response, json
 import mysql.connector
 import base64
 import re
@@ -405,159 +405,134 @@ def menu():
             img_base64 = base64.b64encode(img).decode('utf-8')
         else:
             img_base64 = None
-        formatted_items.append((item_id, name, price, img_base64, category_name))  # Important: category_name
+        formatted_items.append((item_id, name, price, img_base64, category_name))
 
     return render_template('Menu.html', items=formatted_items, categories=categories)
 
+@customer.route('/api/add_to_order', methods=['POST'])
+def add_to_order():
+    data = request.get_json()
+
+    item_id = data['item_id']
+    quantity = data['quantity']
+
+    try:
+        connection = mysql.connector.connect(**db_config)
+        cursor = connection.cursor()
+
+        # Insert the item into the order_item table without requiring order_id
+        cursor.execute("""
+            INSERT INTO order_items (item_id, quantity) 
+            VALUES (%s, %s)
+        """, (item_id, quantity))
+
+        # Commit the transaction
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+        return jsonify({'message': 'Item added to order successfully!'}), 200
+
+    except Exception as e:
+        # If any error occurs, rollback the transaction
+        connection.rollback()
+        cursor.close()
+        connection.close()
+        return jsonify({'error': str(e)}), 500
+
+
+
+import base64
 
 @customer.route('/Orders', methods=['GET', 'POST'])
 def orders():
     if 'user' not in session:
         return redirect(url_for('customer.login'))
 
-    cart_items = session.get('cart_items', [])
+    db = connect_db()
+    cursor = db.cursor()
 
-    if request.method == 'POST':
-        item_index = 0
-        while f'item_name_{item_index}' in request.form:
-            new_item = {
-                'item_id': request.form.get(f'item_id_{item_index}', ''),
-                'name': request.form[f'item_name_{item_index}'],
-                'price': float(request.form[f'item_price_{item_index}']),
-                'quantity': int(request.form[f'item_quantity_{item_index}']),
-                'image_url': request.form.get(f'item_image_{item_index}', '')
-            }
+    try:
+        cursor.execute("""
+            SELECT oi.item_id, i.item_name, i.price, oi.quantity, i.image 
+            FROM order_items oi
+            JOIN items i ON oi.item_id = i.item_id
+        """)
+        rows = cursor.fetchall()
 
-            existing = next((item for item in cart_items if item['item_id'] == new_item['item_id']), None)
-            if existing:
-                existing['quantity'] += new_item['quantity']
-            else:
-                cart_items.append(new_item)
+        items = []
+        for row in rows:
+            item_id, name, price, quantity, image = row
+            encoded_image = base64.b64encode(image).decode('utf-8') if image else None
+            items.append({
+                'item_id': item_id,
+                'name': name,
+                'price': price,
+                'quantity': quantity,
+                'image': encoded_image
+            })
 
-            item_index += 1
+        return render_template('orders.html', items=items)
+    
+    except Exception as e:
+        return f"Error loading orders: {str(e)}"
+    
+    
+from flask import request, jsonify, session
+import os
 
-        
-        session['cart_items'] = cart_items
+@customer.route('/api/create_order', methods=['POST'])
+def create_order():
+    if 'user' not in session:
+        return jsonify({"error": "User not logged in"}), 400
 
-    total_amount = sum(item['price'] * item['quantity'] for item in cart_items)
+    # Process FormData and Files
+    total_amount = float(request.form.get('total_amount'))  # Extracting total amount from the form data
+    items = json.loads(request.form.get('items'))  # The items will be a JSON string, so parse it
+    image_file = request.files.get('payment_ss')  # Get uploaded image file
+
+    payment_ss = None
+    if image_file:
+        payment_ss = image_file.read()  # Read the image as binary data
 
     connection = connect_db()
     cursor = connection.cursor()
-    cursor.execute("SELECT name, email, contact, address FROM customer WHERE customer_id = %s", (session['user'],))
-    users = cursor.fetchone()
-    connection.close()
 
-    if not cart_items:
-        flash("Your cart is empty. Please add items.", "warning")
-
-    return render_template('orders.html', cart_items=cart_items, total_amount=total_amount, users=users)
-
-import traceback
-
-@customer.route('/api/insert_item', methods=['POST'])
-def insert_item():
     try:
-        # Retrieve cart items from the incoming request
-        cart_items = request.json.get('cart_items', [])
-        if not cart_items:
-            return jsonify({"message": "Cart is empty."}), 400
+        # Insert the new order into the orders table (with customer_id)
+        cursor.execute("""
+            INSERT INTO orders (customer_id, total_amount, order_status, payment_ss)
+            VALUES (%s, %s, 'Pending', %s)
+        """, (session['user'], total_amount, payment_ss))
 
-        connection = connect_db()
-        cursor = connection.cursor()
+        # Get the last inserted order_id (to link items)
+        order_id = cursor.lastrowid
 
-        # Insert each cart item into the order_item table
-        for item in cart_items:
+        # Insert order items into order_items table
+        for item in items:
             item_id = item['item_id']
             quantity = item['quantity']
-            
-            # Insert the item into the order_item table
             cursor.execute("""
-                INSERT INTO order_item (item_id, quantity)
-                VALUES (%s, %s)
-            """, (item_id, quantity))
+                INSERT INTO order_items (order_id, item_id, quantity)
+                VALUES (%s, %s, %s)
+            """, (order_id, item_id, quantity))  # Link items to the order
 
         connection.commit()
-        connection.close()
 
-        return jsonify({"message": "Order items inserted successfully!"}), 200
+        return jsonify({"success": True, "message": "Order created successfully", "order_id": order_id}), 200
 
     except Exception as e:
-        # Log the error message and stack trace
-        print("Error occurred:", str(e))
-        print("Stack trace:", traceback.format_exc())
-
         connection.rollback()
-        connection.close()
-        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
-
-
-@customer.route('/Payment', methods=['GET', 'POST'])
-def payment():
-    if 'user' not in session:
-        return redirect(url_for('customer.login'))
-
-    connection = connect_db()
-    cursor = connection.cursor(dictionary=True)
-
-    # Fetch customer details
-    cursor.execute("SELECT customer_id, name, email, contact, address FROM customer WHERE customer_id = %s ORDER BY customer_id DESC LIMIT 1", (session['user'],))
-    user = cursor.fetchone()
-
-    # Fetch cart items from session
-    cart_items = session.get('cart_items', [])
-    total_amount = sum(item['price'] * item['quantity'] for item in cart_items)
-
-    message = None
-    message_type = None
-
-    if not cart_items:
-        message = "Your cart is empty. Please add items."
-        message_type = "warning"
-        connection.close()
-        return render_template('payment.html', cart_items=[], total_amount=0, user=user, message=message, message_type=message_type)
-
-    if request.method == 'POST':
-        # Get payment screenshot
-        payment_file = request.files.get('payment_ss')
-        if not payment_file or payment_file.filename == '':
-            message = "Payment screenshot is required."
-            message_type = "danger"
-            return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user, message=message, message_type=message_type)
-
-        # Read the payment screenshot file
-        payment_ss = payment_file.read()
-
-        # Insert order into the 'orders' table for each cart item
-        for item in cart_items:
-            item_id = item.get('item_id') or item.get('id')
-            quantity = item['quantity']
-
-            cursor.execute("""
-                INSERT INTO orders (customer_id, item_id, quantity, total_amount, order_status, payment_ss)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (
-                user['customer_id'],
-                item_id,
-                quantity,
-                total_amount,
-                'Pending',  # Order status is initially 'Pending'
-                payment_ss  # Storing the payment screenshot as binary data
-            ))
-
-        # Commit the changes to the database
-        connection.commit()
+        return jsonify({"error": str(e)}), 500
+    finally:
         connection.close()
 
-        # Clear the cart items from session after the order is placed
-        session['cart_items'] = []
-
-        # Redirect to Thank You page
-        return redirect(url_for('customer.thankyou'))
-
-    connection.close()
-    return render_template('payment.html', cart_items=cart_items, total_amount=total_amount, user=user, message=message, message_type=message_type)
 
 
+
+
+    
 @customer.route('/api/customer_details', methods=['GET'])
 def api_customer_details():
     if 'user' not in session:
@@ -566,7 +541,7 @@ def api_customer_details():
     connection = connect_db()
     cursor = connection.cursor(dictionary=True)
 
-    cursor.execute("SELECT customer_id, name, email, contact, address FROM customer WHERE customer_id = %s LIMIT 1", (session['user'],))
+    cursor.execute("SELECT customer_id, name, email, contact, address FROM customer WHERE customer_id = %s", (session['user'],))
     user = cursor.fetchone()
 
     connection.close()
@@ -575,38 +550,6 @@ def api_customer_details():
         return jsonify({'message': 'User not found'}), 404
 
     return jsonify(user)
-
-import base64
-
-@customer.route('/api/recent_orders', methods=['GET'])
-def recent_orders():
-    if 'user' not in session:
-        return jsonify({'message': 'User not logged in'}), 401
-
-    # Connect to the database
-    connection = connect_db()
-    cursor = connection.cursor(dictionary=True)
-
-    # Fetch the most recent orders for the logged-in customer
-    cursor.execute("""
-    SELECT oi.item_id, i.item_name, oi.quantity, i.price, 
-           (oi.quantity * i.price) AS total_price
-    FROM order_item oi
-    JOIN items i ON oi.item_id = i.item_id
-    ORDER BY oi.order_item_id DESC
-    LIMIT 5
-""")
-
-    recent_orders = cursor.fetchall()
-
-    connection.close()
-
-    if not recent_orders:
-        return jsonify({'message': 'No recent orders found'}), 404
-
-    # Return the recent orders in JSON format
-    return jsonify(recent_orders)
-
 
 @customer.route('/MyOrders', methods=['GET'])
 def myorder():
@@ -621,17 +564,22 @@ def my_orders():
     query = """
         SELECT 
         o.order_id,
-        c.name AS customer_name,
         o.total_amount,
         o.order_date,
         o.order_status,
         o.payment_ss,
+        c.name AS customer_name,
+        c.contact AS customer_contact,
+        c.address AS customer_address,
         i.item_name,
-        o.quantity
+        oi.quantity
     FROM orders o
     LEFT JOIN customer c ON o.customer_id = c.customer_id
-    LEFT JOIN items i ON o.item_id = i.item_id
+    LEFT JOIN order_items oi ON o.order_item_id = oi.order_item_id
+    LEFT JOIN items i ON oi.item_id = i.item_id
     ORDER BY o.order_date DESC;
+
+
     """
     cursor.execute(query)
     result = cursor.fetchall()

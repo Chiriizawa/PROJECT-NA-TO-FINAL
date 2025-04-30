@@ -345,20 +345,21 @@ def get_orders():
 
     query = """
         SELECT 
-            o.order_id,
-            o.total_amount,
-            o.order_date,
-            o.order_status,
-            o.payment_ss,
-            c.name AS customer_name,
-            c.contact AS customer_contact,
-            c.address AS customer_address,
-            i.item_name,
-            o.quantity
-        FROM orders o
-        LEFT JOIN customer c ON o.customer_id = c.customer_id
-        LEFT JOIN items i ON o.item_id = i.item_id
-        ORDER BY o.order_date DESC;
+        o.order_id,
+        o.total_amount,
+        o.order_date,
+        o.order_status,
+        o.payment_ss,
+        c.name AS customer_name,
+        c.contact AS customer_contact,
+        c.address AS customer_address,
+        i.item_name,
+        oi.quantity
+    FROM orders o
+    LEFT JOIN customer c ON o.customer_id = c.customer_id
+    LEFT JOIN order_items oi ON o.order_item_id = oi.order_item_id
+    LEFT JOIN items i ON oi.item_id = i.item_id
+    ORDER BY o.order_date DESC;
     """
     cursor.execute(query)
     result = cursor.fetchall()
